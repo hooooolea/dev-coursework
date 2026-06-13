@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.police.person.mapper.PersonInfoMapper">
+
+    <select id="selectPersonPage" resultType="com.police.person.entity.PersonInfo">
+        SELECT * FROM person_info
+        WHERE is_deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%')
+              OR id_card_tail = #{keyword}
+              OR phone_tail   = #{keyword})
+        </if>
+        <if test="personType != null and personType != ''">
+            AND person_type = #{personType}
+        </if>
+        ORDER BY
+            CASE person_type
+                WHEN 'wanted'     THEN 1
+                WHEN 'focus'      THEN 2
+                WHEN 'drug'       THEN 3
+                WHEN 'correction' THEN 4
+                ELSE 5
+            END,
+            created_at DESC
+    </select>
+
+</mapper>
