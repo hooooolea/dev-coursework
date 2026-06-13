@@ -1,0 +1,100 @@
+package com.police.alarm.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.police.alarm.dto.AlarmCreateDTO;
+import com.police.alarm.dto.AlarmQueryDTO;
+import com.police.alarm.entity.AlarmDispatch;
+import com.police.alarm.entity.AlarmRecord;
+import com.police.alarm.mapper.AlarmDispatchMapper;
+import com.police.alarm.mapper.AlarmRecordMapper;
+import com.police.alarm.service.AlarmService;
+import com.police.common.exception.BusinessException;
+import com.police.common.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(rollbackFor = Exception.class)
+public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord> implements AlarmService {
+
+    private final AlarmDispatchMapper dispatchMapper;
+    private final AtomicInteger seqCounter = new AtomicInteger(0);
+
+    @Override
+    public Long create(AlarmCreateDTO dto) {
+        AlarmRecord alarm = new AlarmRecord();
+        alarm.setAlarmNo(generateAlarmNo());
+        alarm.setAlarmTime(dto.getAlarmTime());
+        alarm.setCallerName(dto.getCallerName());
+        alarm.setCallerPhone(dto.getCallerPhone());
+        alarm.setLocationProvince(dto.getLocationProvince());
+        alarm.setLocationCity(dto.getLocationCity());
+        alarm.setLocationDistrict(dto.getLocationDistrict());
+        alarm.setLocationDetail(dto.getLocationDetail());
+        alarm.setAlarmType(dto.getAlarmType());
+        alarm.setAlarmDesc(dto.getAlarmDesc());
+        alarm.setUrgencyLevel(dto.getUrgencyLevel());
+        alarm.setStatus(1);
+        alarm.setDutyUserId(SecurityUtil.getCurrentUserId());
+        save(alarm);
+        return alarm.getId();
+    }
+
+    @Override
+    public IPage<AlarmRecord> listPage(AlarmQueryDTO query) {
+        Page<AlarmRecord> page = new Page<>(query.getPage(), query.getSize());
+        return baseMapper.selectPage(page, query);
+    }
+
+    @Override
+    public void dispatch(Long alarmId, Long officerId) {
+        AlarmRecord alarm = getById(alarmId);
+        if (alarm == null) throw BusinessException.of("警情不存在");
+        if (alarm.getStatus() == 4) throw BusinessException.of("警情已关闭，无法派发");
+
+        AlarmDispatch dispatch = new AlarmDispatch();
+        dispatch.setAlarmId(alarmId);
+        dispatch.setOfficerId(officerId);
+        dispatch.setDispatchTime(LocalDateTime.now());
+        dispatch.setStatus(1);
+        dispatchMapper.insert(dispatch);
+
+        // 更新警情状态为处置中
+        alarm.setStatus(2);
+        updateById(alarm);
+    }
+
+    @Override
+    public void arrive(Long dispatchId) {
+        AlarmDispatch dispatch = dispatchMapper.selectById(dispatchId);
+        if (dispatch == null) throw BusinessException.of("派发记录不存在");
+        dispatch.setArriveTime(LocalDateTime.now());
+        dispatch.setStatus(3);
+        dispatchMapper.updateById(dispatch);
+    }
+
+    @Override
+    public void close(Long alarmId, String summary) {
+        AlarmRecord alarm = getById(alarmId);
+        if (alarm == null) throw BusinessException.of("警情不存在");
+        alarm.setStatus(4);
+        alarm.setCloseTime(LocalDateTime.now());
+        alarm.setCloseSummary(summary);
+        updateById(alarm);
+    }
+
+    private String generateAlarmNo() {
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int seq = seqCounter.incrementAndGet() % 1000;
+        return "BJ" + date + String.format("%03d", seq);
+    }
+}

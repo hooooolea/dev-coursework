@@ -1,0 +1,27 @@
+# IDE
+.idea/
+*.iml
+
+# Build
+smart-police/target/
+smart-police/logs/
+smart-police/uploads/
+
+# Frontend
+smart-police-web/node_modules/
+smart-police-web/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (API keys, passwords)
+application-dev.yml
+application-prod.yml
+*.log
+
+# Maven
+.mvn/
+
+# Git
+.git/
