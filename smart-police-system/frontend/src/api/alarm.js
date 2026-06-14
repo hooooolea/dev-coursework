@@ -4,6 +4,7 @@ export const alarmApi = {
   list: (params) => request.get('/alarm/list', { params }),
   detail: (id) => request.get(`/alarm/${id}`),
   create: (data) => request.post('/alarm', data),
+  equipmentRecommend: (id) => request.get(`/alarm/${id}/equipment-recommend`),
   dispatch: (id, officerId) => request.put(`/alarm/${id}/dispatch`, { officerId }),
   arrive: (dispatchId) => request.put(`/alarm/dispatch/${dispatchId}/arrive`),
   close: (id, summary) => request.put(`/alarm/${id}/close`, { summary })

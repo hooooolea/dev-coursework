@@ -65,6 +65,23 @@
         style="margin-top:16px;justify-content:flex-end"
         @current-change="loadList"
       />
+
+      <!-- AI 装备推荐 -->
+      <div v-if="equipResult" class="equip-card">
+        <div class="equip-card-header">
+          <span> AI 装备推荐 — 警情 #{{ equipAlarmId }}</span>
+          <el-button link size="small" @click="closeEquipCard">关闭</el-button>
+        </div>
+        <div v-if="equipResult.must && equipResult.must.length" class="equip-row">
+          <span class="equip-tag equip-must">必带</span>
+          <span v-for="e in equipResult.must" :key="e.name" class="equip-item">{{ e.name }}（{{ e.reason }}）</span>
+        </div>
+        <div v-if="equipResult.suggested && equipResult.suggested.length" class="equip-row">
+          <span class="equip-tag equip-suggest">建议</span>
+          <span v-for="e in equipResult.suggested" :key="e.name" class="equip-item">{{ e.name }}（{{ e.reason }}）</span>
+        </div>
+        <div v-if="equipResult.summary" class="equip-summary">{{ equipResult.summary }}</div>
+      </div>
     </el-card>
 
     <!-- 接警录入对话框 -->
@@ -167,10 +184,12 @@ async function handleCreate() {
   await createFormRef.value.validate()
   submitting.value = true
   try {
-    await alarmApi.create(createForm)
+    const res = await alarmApi.create(createForm)
     ElMessage.success('接警录入成功')
     createVisible.value = false
     loadList()
+    // 自动触发 AI 装备推荐
+    fetchEquipRecommend(res.data)
   } finally {
     submitting.value = false
   }
@@ -194,9 +213,47 @@ async function handleClose(row) {
   loadList()
 }
 
+// AI 装备推荐
+const equipLoading = ref(false)
+const equipResult = ref(null)
+const equipAlarmId = ref(null)
+
+async function fetchEquipRecommend(alarmId) {
+  equipLoading.value = true
+  equipResult.value = null
+  equipAlarmId.value = alarmId
+  try {
+    const res = await alarmApi.equipmentRecommend(alarmId)
+    const text = typeof res.data === 'string' ? res.data : (res.data?.data || JSON.stringify(res.data))
+    try { equipResult.value = JSON.parse(text) }
+    catch { equipResult.value = { must: [], suggested: [], summary: text } }
+  } catch { /* AI 不可用 */ }
+  finally { equipLoading.value = false }
+}
+
+function closeEquipCard() {
+  equipResult.value = null
+  equipAlarmId.value = null
+}
+
 onMounted(loadList)
 </script>
 
 <style scoped>
 .search-form { margin-bottom: 0; }
+
+.equip-card {
+  margin-top: 16px; padding: 16px; background: #fafbfc;
+  border: 1px solid #e4e7ed; border-radius: 8px;
+}
+.equip-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 12px;
+}
+.equip-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.equip-tag { font-size: 12px; padding: 1px 8px; border-radius: 3px; font-weight: 600; }
+.equip-must { background: #fef0f0; color: #f56c6c; }
+.equip-suggest { background: #f0f9eb; color: #67c23a; }
+.equip-item { font-size: 13px; color: #606266; }
+.equip-summary { font-size: 12px; color: #909399; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e4e7ed; }
 </style>

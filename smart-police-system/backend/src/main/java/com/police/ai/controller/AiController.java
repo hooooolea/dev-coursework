@@ -44,7 +44,6 @@ public class AiController {
 
     /** SSE 流式：智能排班推荐 */
     @PostMapping(value = "/schedule/recommend", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAuthority('patrol:view')")
     public SseEmitter scheduleRecommend(@RequestBody Map<String, Object> req) {
         SseEmitter emitter = new SseEmitter(60_000L);
         String taskType  = (String) req.getOrDefault("taskType", "例行巡逻");
@@ -72,8 +71,7 @@ public class AiController {
 
     /** JSON：装备推荐 */
     @PostMapping("/equipment/recommend")
-    @PreAuthorize("hasAuthority('patrol:view')")
-    public Result<String> equipmentRecommend(@RequestBody Map<String, Object> req) {
+    @PreAuthorize("hasAuthority('patrol:view')")    public Result<String> equipmentRecommend(@RequestBody Map<String, Object> req) {
         try {
             String taskType     = (String) req.getOrDefault("taskType", "");
             String shiftType    = (String) req.getOrDefault("shiftType", "");
@@ -89,7 +87,6 @@ public class AiController {
 
     /** SSE 流式：通用 AI 对话（带实时数据上下文） */
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAuthority('sys:user:view')")
     public SseEmitter chat(@RequestBody Map<String, Object> req) {
         SseEmitter emitter = new SseEmitter(60_000L);
         String userMessage = (String) req.getOrDefault("message", "");
@@ -107,7 +104,6 @@ public class AiController {
 
     /** SSE 流式：警情研判分析 */
     @PostMapping(value = "/analysis/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAuthority('stat:view')")
     public SseEmitter analysisChat(@RequestBody Map<String, Object> req) {
         SseEmitter emitter = new SseEmitter(120_000L);
         String focus = (String) req.getOrDefault("focus", "");
@@ -125,8 +121,7 @@ public class AiController {
 
     /** 对话历史 */
     @GetMapping("/history")
-    @PreAuthorize("hasAuthority('sys:user:view')")
-    public Result<IPage<AiConversation>> history(@RequestParam(defaultValue = "1") int page,
+    @PreAuthorize("hasAuthority('sys:user:view')")    public Result<IPage<AiConversation>> history(@RequestParam(defaultValue = "1") int page,
                                                   @RequestParam(defaultValue = "20") int size) {
         return Result.ok(conversationMapper.selectPage(
                 new Page<>(page, size),
@@ -152,8 +147,7 @@ public class AiController {
 
     /** 视频 AI 摘要（URL 方式） */
     @PostMapping("/omni/summarize-video")
-    @PreAuthorize("hasAuthority('patrol:view')")
-    public Result<String> summarizeVideo(@RequestBody Map<String, String> req) {
+    @PreAuthorize("hasAuthority('patrol:view')")    public Result<String> summarizeVideo(@RequestBody Map<String, String> req) {
         try {
             String videoUrl = req.get("videoUrl");
             if (videoUrl == null || videoUrl.isBlank()) return Result.fail(400, "视频 URL 为空");
@@ -166,8 +160,7 @@ public class AiController {
 
     /** 视频分析（base64 上传方式，支持 mp4/mov/avi/webm） */
     @PostMapping("/omni/analyze-video")
-    @PreAuthorize("hasAuthority('patrol:view')")
-    public Result<String> analyzeVideo(@RequestBody Map<String, String> req) {
+    @PreAuthorize("hasAuthority('patrol:view')")    public Result<String> analyzeVideo(@RequestBody Map<String, String> req) {
         try {
             String video = req.get("video");
             String mime = req.getOrDefault("mimeType", "video/mp4");
@@ -212,8 +205,7 @@ public class AiController {
 
     /** TTS 文字转语音 */
     @PostMapping("/tts/speak")
-    @PreAuthorize("hasAuthority('sys:user:view')")
-    public Result<String> speak(@RequestBody Map<String, String> req) {
+    @PreAuthorize("hasAuthority('sys:user:view')")    public Result<String> speak(@RequestBody Map<String, String> req) {
         try {
             String text = req.get("text");
             String voice = req.getOrDefault("voice", "苏打");

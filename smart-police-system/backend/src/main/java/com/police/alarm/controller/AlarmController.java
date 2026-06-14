@@ -1,6 +1,7 @@
 package com.police.alarm.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.police.ai.service.AiEquipmentService;
 import com.police.alarm.dto.AlarmCreateDTO;
 import com.police.alarm.dto.AlarmQueryDTO;
 import com.police.alarm.entity.AlarmRecord;
@@ -9,17 +10,20 @@ import com.police.common.annotation.OperationLog;
 import com.police.common.result.Result;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/alarm")
 @RequiredArgsConstructor
 public class AlarmController {
 
     private final AlarmService alarmService;
+    private final AiEquipmentService aiEquipmentService;
 
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('alarm:view')")
@@ -62,5 +66,22 @@ public class AlarmController {
     public Result<?> close(@PathVariable Long id, @RequestBody Map<String, String> body) {
         alarmService.close(id, body.get("summary"));
         return Result.ok();
+    }
+
+    /** AI 装备推荐（接警后自动触发） */
+    @GetMapping("/{id}/equipment-recommend")
+    @PreAuthorize("hasAuthority('alarm:view')")
+    public Result<String> equipmentRecommend(@PathVariable Long id) {
+        try {
+            AlarmRecord alarm = alarmService.getById(id);
+            if (alarm == null) return Result.fail(404, "警情不存在");
+            String areaName = alarm.getLocationDetail() != null ? alarm.getLocationDetail() : "";
+            String alarmType = alarm.getAlarmType() != null ? alarm.getAlarmType() : "";
+            String result = aiEquipmentService.recommend(alarmType, "", areaName, "");
+            return Result.ok(result);
+        } catch (Exception e) {
+            log.error("装备推荐失败 alarmId={}", id, e);
+            return Result.fail("AI 服务暂不可用");
+        }
     }
 }

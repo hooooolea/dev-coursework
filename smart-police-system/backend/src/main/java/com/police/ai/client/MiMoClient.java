@@ -131,7 +131,7 @@ public class MiMoClient {
         String json = objectMapper.writeValueAsString(body);
         return new Request.Builder()
                 .url(config.getBaseUrl() + CHAT_COMPLETIONS_PATH)
-                .header("api-key", getApiKey())
+                .header("Authorization", "Bearer " + getApiKey())
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(json, JSON))
                 .build();
@@ -302,7 +302,7 @@ public class MiMoClient {
         RequestBody body = RequestBody.create(jsonBody, JSON);
         Request request = new Request.Builder()
                 .url(config.getBaseUrl() + CHAT_COMPLETIONS_PATH)
-                .header("api-key", getApiKey())
+                .header("Authorization", "Bearer " + getApiKey())
                 .post(body)
                 .build();
 

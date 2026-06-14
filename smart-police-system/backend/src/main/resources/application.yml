@@ -65,7 +65,7 @@ police:
 ai:
   mimo:
     api-key: ${MIMO_API_KEY:}
-    base-url: https://api.xiaomimimo.com/v1
+    base-url: https://token-plan-cn.xiaomimimo.com/v1
     model-pro: mimo-v2.5-pro
     model-omni: mimo-v2.5-omni
     model-asr: mimo-v2.5-asr
