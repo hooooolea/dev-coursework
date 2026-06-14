@@ -6,31 +6,24 @@
 
 | 项目 | 技术栈 | 说明 |
 |------|--------|------|
-| [智能警务管理系统](./) | Spring Boot 3 + Vue 3 + MySQL + Redis + AI | Java Web 大作业 |
+| [智能警务管理系统](./smart-police-system/) | Spring Boot 3 + Vue 3 + MySQL + Redis + AI | Java Web 大作业 |
 
-## 项目结构
+## 目录结构
 
 ```
 dev-coursework/
-├── backend/               # Spring Boot 后端 (121 个 Java 文件)
-├── frontend/              # Vue 3 前端 (38 个 Vue/JS 文件)
-├── smart_police.sql       # 数据库建表 SQL
-├── 01-06_*.md             # 设计文档
-├── 大作业报告.md           # 课程报告
-└── README.md              # 本文件
+├── README.md                  # 本文件（项目索引）
+├── docs/                      # 所有文档
+│   ├── 01_系统架构设计.md
+│   ├── 02_功能模块设计.md
+│   ├── 03_数据库设计.md
+│   ├── 04_项目结构与开发规范.md
+│   ├── 05_AI智能板块设计.md
+│   ├── 06_开发Todo.md
+│   ├── 大作业报告.md
+│   └── 答辩PPT结构.md
+└── smart-police-system/        # 智能警务管理系统
+    ├── backend/                # Spring Boot 后端 (121 Java)
+    ├── frontend/               # Vue 3 前端 (38 Vue/JS)
+    └── smart_police.sql        # 数据库建表 SQL
 ```
-
-## 快速启动
-
-```bash
-# 后端
-cd backend && mvn spring-boot:run     # → http://localhost:8081
-
-# 前端
-cd frontend && npm install && npm run dev  # → http://localhost:5174
-
-# 数据库
-mysql -u root -p < smart_police.sql
-```
-
-默认账号：`admin` / `123456`
