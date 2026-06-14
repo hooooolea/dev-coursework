@@ -44,7 +44,7 @@
         <el-button type="primary" link size="small" @click="$router.push('/alarm')">全部</el-button>
       </div>
       <el-table :data="recentAlarms" size="small">
-        <el-table-column prop="alarmNo" label="警情编号" width="150" />
+        <el-table-column prop="alarmNo" label="警情编号" min-width="150" />
         <el-table-column label="类型" width="100">
           <template #default="{ row }">{{ alarmTypeLabel(row.alarmType) }}</template>
         </el-table-column>
@@ -99,6 +99,20 @@ let trendInstance = null
 let pieInstance   = null
 
 const PIE_COLORS = ['#1a237e','#283593','#303f9f','#3949ab','#5c6bc0','#7986cb','#9fa8da','#c5cae9']
+
+function animateCount(el, target, duration = 400) {
+  if (target == null || target === '-') return
+  const num = Number(target)
+  if (isNaN(num)) return
+  const start = performance.now()
+  function step(ts) {
+    const progress = Math.min((ts - start) / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    el.textContent = Math.round(eased * num)
+    if (progress < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
 
 function initTrendChart(dates, counts) {
   if (!trendInstance) trendInstance = echarts.init(trendChart.value)
@@ -170,6 +184,11 @@ async function loadData() {
     statCards[2].value = s.controlledVehicle
     statCards[3].value = s.onDutyOfficer
 
+    await nextTick()
+    document.querySelectorAll('.stat-num').forEach((el, i) => {
+      animateCount(el, [s.todayAlarm, s.activeCase, s.controlledVehicle, s.onDutyOfficer][i])
+    })
+
     initTrendChart(s.trendDates, s.trendCounts)
     initPieChart(s.typeStats || [])
 
@@ -189,8 +208,13 @@ onMounted(loadData)
 .stat-card {
   background: #fff;
   border: 1px solid #e4e7ed;
-  border-radius: 3px;
+  border-radius: 6px;
   padding: 18px 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .stat-label { font-size: 14px; color: #909399; margin-bottom: 8px; }
 .stat-num { font-size: 26px; font-weight: 600; color: #303133; }
@@ -200,8 +224,13 @@ onMounted(loadData)
 .card {
   background: #fff;
   border: 1px solid #e4e7ed;
-  border-radius: 3px;
+  border-radius: 6px;
   padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .card-title {
   font-size: 13px;

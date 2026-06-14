@@ -45,7 +45,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="requestUrl"  label="请求路径" show-overflow-tooltip />
+        <el-table-column prop="requestUrl" label="请求路径" min-width="200" show-overflow-tooltip />
         <el-table-column prop="createdAt"   label="时间"     width="160" />
       </el-table>
 

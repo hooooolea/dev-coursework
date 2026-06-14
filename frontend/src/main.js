@@ -20,4 +20,7 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
+import { ElMessage } from 'element-plus'
+ElMessage.defaultOffset = 60
+
 app.mount('#app')

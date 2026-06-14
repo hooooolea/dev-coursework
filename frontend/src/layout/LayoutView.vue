@@ -165,13 +165,13 @@ async function handleCommand(cmd) {
 .el-menu { border-right: none; flex:1; overflow-y: auto; }
 .el-menu::-webkit-scrollbar { width: 4px; }
 .el-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-.el-menu-item { height: 48px; font-size: 13px; }
-.el-menu-item.is-active { background: rgba(255,255,255,0.15) !important; }
+.el-menu-item { height: 48px; font-size: 14px; transition: border-left 0.2s ease; }
+.el-menu-item.is-active { background: rgba(255,255,255,0.15) !important; border-left: 3px solid #fff; }
 .el-menu-item:hover { background: rgba(255,255,255,0.08) !important; }
 
 .menu-group-title {
   padding: 16px 20px 4px;
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255,255,255,0.4);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -195,11 +195,10 @@ async function handleCommand(cmd) {
 .header-left { display: flex; align-items: center; gap: 14px; }
 
 .collapse-btn {
-  font-size: 18px;
-  cursor: pointer;
-  color: #606266;
+  font-size: 18px; cursor: pointer; color: #606266;
+  transition: transform 0.3s ease, color 0.2s;
 }
-.collapse-btn:hover { color: #1a237e; }
+.collapse-btn:hover { color: #1a237e; transform: scale(1.1); }
 
 .header-right { display: flex; align-items: center; }
 

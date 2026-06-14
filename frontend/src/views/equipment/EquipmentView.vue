@@ -33,7 +33,7 @@
           <el-empty description="暂无数据" :image-size="80" />
         </template>
         <el-table-column prop="equipNo"   label="装备编号" width="130" />
-        <el-table-column prop="equipName" label="装备名称" show-overflow-tooltip />
+        <el-table-column prop="equipName" label="装备名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="equipType" label="类型" width="100">
           <template #default="{ row }">
             {{ equipTypeLabel(row.equipType) }}
@@ -160,7 +160,7 @@
         </template>
         <el-table-column prop="borrowerName"   label="借用人"   width="100" />
         <el-table-column prop="borrowPurpose"  label="用途"     show-overflow-tooltip />
-        <el-table-column prop="borrowTime"     label="领用时间" width="155" />
+        <el-table-column prop="borrowTime" label="领用时间" min-width="155" />
         <el-table-column prop="expectedReturn" label="预计归还" width="155" />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{ row }">

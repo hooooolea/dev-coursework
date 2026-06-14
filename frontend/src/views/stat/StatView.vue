@@ -38,19 +38,17 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <el-select v-model="caseMonths" style="width:100px" @change="loadCaseStats">
-                <el-option label="近3个月" :value="3" />
-                <el-option label="近6个月" :value="6" />
-                <el-option label="近12个月" :value="12" />
-              </el-select>
-              <el-button type="primary" :icon="Download" @click="doExport('case')">导出</el-button>
-            </div>
-            <el-radio-group v-model="compMode" size="small" @change="calcComparison">
+          <div class="stat-card stat-card-ctrl">
+            <el-select v-model="caseMonths" style="width:120px" @change="loadCaseStats" size="small">
+              <el-option label="近3个月" :value="3" />
+              <el-option label="近6个月" :value="6" />
+              <el-option label="近12个月" :value="12" />
+            </el-select>
+            <el-radio-group v-model="compMode" size="small">
               <el-radio-button value="mom">环比</el-radio-button>
               <el-radio-button value="yoy">同比</el-radio-button>
             </el-radio-group>
+            <el-button type="primary" :icon="Download" @click="doExport('case')" size="small">导出报表</el-button>
           </div>
         </el-col>
       </el-row>
@@ -194,7 +192,7 @@ function compClass(field) {
   return curr >= last ? 'delta-up' : 'delta-down'
 }
 
-function calcComparison() { /* no-op — compData/compLabel are computed reactively */ }
+function calcComparison() { loadCaseStats() }
 
 const caseLineRef  = ref()
 const casePieRef   = ref()
@@ -255,6 +253,7 @@ async function loadOfficerStats() {
 }
 
 async function onTabChange(tab) {
+  if (tab === 'case' && caseData.total === null) loadCaseStats()
   if (tab === 'officer' && officerData.total === null) loadOfficerStats()
 }
 
@@ -283,6 +282,7 @@ onMounted(() => loadCaseStats())
   flex-direction: column;
   justify-content: center;
 }
+.stat-card-ctrl { align-items:center; gap:8px; min-height:96px; }
 .sc-label { font-size: 14px; color: #909399; margin-bottom: 6px; }
 .sc-num   { font-size: 24px; font-weight: 600; color: #303133; }
 .sc-delta { font-size: 14px; margin-top: 4px; font-weight: 500; }

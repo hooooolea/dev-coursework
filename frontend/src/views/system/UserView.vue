@@ -19,12 +19,12 @@
 
       <el-table :data="list" v-loading="loading" stripe>
         <el-table-column prop="badgeNo"  label="警号"   width="120" />
-        <el-table-column prop="realName" label="姓名"   width="100" />
-        <el-table-column prop="username" label="用户名" width="120" />
+        <el-table-column prop="realName" label="姓名"   min-width="100" />
+        <el-table-column prop="username" label="用户名" min-width="120" />
         <el-table-column prop="gender"   label="性别"   width="70" align="center">
           <template #default="{ row }">{{ row.gender === 1 ? '男' : '女' }}</template>
         </el-table-column>
-        <el-table-column prop="phone"    label="手机号" width="130" />
+        <el-table-column prop="phone"    label="手机号" min-width="130" />
         <el-table-column prop="status"   label="状态"   width="80" align="center">
           <template #default="{ row }">
             <span :class="row.status === 1 ? 'tag-normal' : 'tag-danger'">
@@ -33,7 +33,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="lastLoginAt" label="最后登录" width="160" />
-        <el-table-column label="操作" width="270">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openEdit(row)">编辑</el-button>
             <el-button type="warning" link size="small" @click="openAssignRole(row)">分配角色</el-button>

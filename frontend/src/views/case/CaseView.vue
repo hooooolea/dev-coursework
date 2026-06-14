@@ -29,7 +29,7 @@
 
       <el-table :data="list" v-loading="loading" stripe>
         <el-table-column prop="caseNo" label="案件编号" width="160" />
-        <el-table-column prop="caseName" label="案件名称" show-overflow-tooltip />
+        <el-table-column prop="caseName" label="案件名称" min-width="200" show-overflow-tooltip />
         <el-table-column prop="caseType" label="案件类型" width="110" />
         <el-table-column prop="severityLevel" label="等级" width="80" align="center">
           <template #default="{ row }">

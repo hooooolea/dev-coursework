@@ -288,13 +288,17 @@ onMounted(() => { loadStats(); checkAi() })
   background: #fff; border: 1px solid #e4e7ed; border-radius: 6px;
   padding: 20px 24px; display: flex; flex-direction: column; justify-content: center;
   min-height: 88px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .sc-label { font-size: 13px; color: #909399; margin-bottom: 8px; }
 .sc-num { font-size: 28px; font-weight: 700; color: #303133; line-height: 1.2; }
 
 .card {
-  background: #fff; border: 1px solid #e4e7ed; border-radius: 3px; padding: 16px;
+  background: #fff; border: 1px solid #e4e7ed; border-radius: 6px; padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 .card-title { font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 12px; }
 
 .chat-panel { display: flex; flex-direction: column; height: 500px; }

@@ -11,7 +11,7 @@
       <el-table :data="list" v-loading="loading" stripe>
         <el-table-column prop="roleCode" label="角色编码" width="180" />
         <el-table-column prop="roleName" label="角色名称" width="150" />
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
+        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="sortOrder" label="排序" width="80" align="center" />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{ row }">

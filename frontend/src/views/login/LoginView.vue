@@ -2,17 +2,17 @@
   <div class="login-wrap">
     <div class="login-box">
       <div class="login-header">
-        <el-icon size="36" color="#1a237e"><Platform /></el-icon>
+        <el-icon size="40" color="#1a237e"><Platform /></el-icon>
         <h1>智能警务管理系统</h1>
         <p>Public Security Intelligence Platform</p>
       </div>
 
       <el-form ref="formRef" :model="form" :rules="rules" @keyup.enter="handleLogin">
         <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="用户名" size="large" :prefix-icon="User" clearable />
+          <el-input v-model="form.username" placeholder="用户名" size="large" :prefix-icon="User" clearable class="login-input" />
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" placeholder="密码" size="large" :prefix-icon="Lock" type="password" show-password clearable />
+          <el-input v-model="form.password" placeholder="密码" size="large" :prefix-icon="Lock" type="password" show-password clearable class="login-input" />
         </el-form-item>
         <el-button type="primary" size="large" class="login-btn" :loading="loading" @click="handleLogin">
           登录
@@ -67,9 +67,9 @@ async function handleLogin() {
 .login-box {
   width: 400px;
   background: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
+  border-radius: 12px;
   padding: 48px 40px 36px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .login-header {
@@ -89,17 +89,22 @@ async function handleLogin() {
   color: #909399;
 }
 
+.login-input :deep(.el-input__wrapper) {
+  transition: box-shadow 0.25s ease;
+}
+.login-input :deep(.el-input__wrapper:focus-within) {
+  box-shadow: 0 0 0 2px rgba(26,35,126,0.15);
+}
+
 .login-btn {
   width: 100%;
   margin-top: 4px;
   background: #1a237e;
   border-color: #1a237e;
+  transition: background 0.2s;
 }
-
-.login-btn:hover {
-  background: #1565c0;
-  border-color: #1565c0;
-}
+.login-btn:hover { background: #283593; border-color: #283593; }
+.login-btn:active { transform: scale(0.98); }
 
 .hint {
   margin-top: 20px;
