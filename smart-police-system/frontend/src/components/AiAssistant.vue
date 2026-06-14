@@ -29,11 +29,11 @@
         </template>
 
         <div v-for="(m, i) in messages" :key="i" :class="['ai-msg', m.role === 'user' ? 'ai-msg-user' : 'ai-msg-bot']">
-          <div class="ai-msg-content">{{ m.content }}</div>
+          <div class="ai-msg-content" v-html="renderMd(m.content)"></div>
         </div>
 
         <div v-if="streaming" class="ai-msg ai-msg-bot">
-          <div class="ai-msg-content">{{ streamingText }}<span class="ai-cursor">|</span></div>
+          <div class="ai-msg-content" v-html="renderMd(streamingText) + '<span class=ai-cursor>|</span>'"></div>
         </div>
       </div>
 
@@ -73,6 +73,26 @@ const hints = [
   '现在有多少警员在岗？',
   '近30天哪个区域警情最多？'
 ]
+
+function renderMd(text) {
+  if (!text) return ''
+  let html = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^## (.+)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^# (.+)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^---$/gm, '<hr>')
+  html = html.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>')
+  html = html.replace(/^(\d+)[\.\)] (.+)$/gm, '<li>$2</li>')
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
+  html = html.replace(/<\/ul>\n<ul>/g, '\n')
+  html = html.replace(/\n\n+/g, '<br><br>')
+  html = html.replace(/\n/g, '<br>')
+  html = html.replace(/<br>\s*(<h4>|<hr>|<ul>)/g, '$1')
+  html = html.replace(/(<\/h4>|<\/hr>|<\/ul>)\s*<br>/g, '$1')
+  return html
+}
 
 async function openChat() {
   open.value = true
@@ -196,8 +216,13 @@ function scrollBottom() {
 .ai-msg-bot  { align-self: flex-start; }
 .ai-msg-content {
   padding: 8px 14px; border-radius: 14px; font-size: 13px;
-  line-height: 1.6; white-space: pre-wrap;
+  line-height: 1.6;
 }
+.ai-msg-content ul { padding-left: 18px; margin: 4px 0; }
+.ai-msg-content li { margin: 2px 0; }
+.ai-msg-content h4 { font-size: 14px; margin: 8px 0 4px; }
+.ai-msg-content hr { border: none; border-top: 1px solid #e4e7ed; margin: 10px 0; }
+.ai-msg-content strong { color: #1a237e; }
 .ai-msg-user .ai-msg-content { background: #1a237e; color: #fff; border-bottom-right-radius: 4px; }
 .ai-msg-bot  .ai-msg-content { background: #f0f2f5; color: #303133; border-bottom-left-radius: 4px; }
 

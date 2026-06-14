@@ -108,8 +108,8 @@
       <el-form :model="controlForm" label-width="90px">
         <el-form-item label="布控级别">
           <el-radio-group v-model="controlForm.level">
-            <el-radio :label="1">一般</el-radio>
-            <el-radio :label="2">紧急</el-radio>
+            <el-radio :value="1">一般</el-radio>
+            <el-radio :value="2">紧急</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="布控原因">

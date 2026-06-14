@@ -31,6 +31,15 @@ public class AlarmController {
         return Result.ok(alarmService.listPage(query));
     }
 
+    /** 查询当前登录警员的待处置警情 */
+    @GetMapping("/my-tasks")
+    @PreAuthorize("hasAuthority('alarm:view')")
+    public Result<IPage<AlarmRecord>> myTasks(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return Result.ok(alarmService.listMyTasks(page, size));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('alarm:view')")
     public Result<AlarmRecord> detail(@PathVariable Long id) {

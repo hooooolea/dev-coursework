@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -53,6 +54,25 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
     public IPage<AlarmRecord> listPage(AlarmQueryDTO query) {
         Page<AlarmRecord> page = new Page<>(query.getPage(), query.getSize());
         return baseMapper.selectPage(page, query);
+    }
+
+    @Override
+    public IPage<AlarmRecord> listMyTasks(int page, int size) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<AlarmDispatch> dispatches = dispatchMapper.selectList(
+            new LambdaQueryWrapper<AlarmDispatch>()
+                .eq(AlarmDispatch::getOfficerId, userId)
+                .in(AlarmDispatch::getStatus, 1, 2));
+        if (dispatches.isEmpty()) {
+            IPage<AlarmRecord> empty = new Page<>(page, size);
+            empty.setTotal(0);
+            return empty;
+        }
+        List<Long> alarmIds = dispatches.stream().map(AlarmDispatch::getAlarmId).collect(java.util.stream.Collectors.toList());
+        LambdaQueryWrapper<AlarmRecord> q = new LambdaQueryWrapper<AlarmRecord>()
+                .in(AlarmRecord::getId, alarmIds)
+                .orderByDesc(AlarmRecord::getAlarmTime);
+        return baseMapper.selectPage(new Page<>(page, size), q);
     }
 
     @Override
@@ -94,7 +114,18 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
 
     private String generateAlarmNo() {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int seq = seqCounter.incrementAndGet() % 1000;
+        // 从数据库中查当天最大序号，避免重复
+        int maxSeq = 0;
+        List<AlarmRecord> todayList = baseMapper.selectList(
+            new LambdaQueryWrapper<AlarmRecord>()
+                .likeRight(AlarmRecord::getAlarmNo, "BJ" + date)
+                .orderByDesc(AlarmRecord::getAlarmNo)
+                .last("LIMIT 1"));
+        if (!todayList.isEmpty()) {
+            String lastNo = todayList.get(0).getAlarmNo();
+            try { maxSeq = Integer.parseInt(lastNo.substring(lastNo.length() - 3)); } catch (Exception ignored) {}
+        }
+        int seq = Math.max(seqCounter.incrementAndGet(), maxSeq + 1) % 1000;
         return "BJ" + date + String.format("%03d", seq);
     }
 }

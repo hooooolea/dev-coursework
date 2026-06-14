@@ -98,10 +98,10 @@
         </el-form-item>
         <el-form-item label="案件等级">
           <el-radio-group v-model="createForm.severityLevel">
-            <el-radio :label="1">一般</el-radio>
-            <el-radio :label="2">重要</el-radio>
-            <el-radio :label="3">重大</el-radio>
-            <el-radio :label="4">特重大</el-radio>
+            <el-radio :value="1">一般</el-radio>
+            <el-radio :value="2">重要</el-radio>
+            <el-radio :value="3">重大</el-radio>
+            <el-radio :value="4">特重大</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="案情描述" prop="caseDesc">
@@ -169,10 +169,10 @@
         </el-row>
         <el-form-item label="案件等级">
           <el-radio-group v-model="editForm.severityLevel">
-            <el-radio :label="1">一般</el-radio>
-            <el-radio :label="2">重要</el-radio>
-            <el-radio :label="3">重大</el-radio>
-            <el-radio :label="4">特重大</el-radio>
+            <el-radio :value="1">一般</el-radio>
+            <el-radio :value="2">重要</el-radio>
+            <el-radio :value="3">重大</el-radio>
+            <el-radio :value="4">特重大</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="案情描述">

@@ -27,11 +27,11 @@
             </div>
 
             <div v-for="(m, i) in messages" :key="i" :class="['chat-msg', m.role === 'user' ? 'msg-user' : 'msg-bot']">
-              <div class="msg-content">{{ m.content }}</div>
+              <div class="msg-content" v-html="renderMd(m.content)"></div>
             </div>
 
             <div v-if="streaming" class="chat-msg msg-bot">
-              <div class="msg-content">{{ streamingText }}<span class="cursor">|</span></div>
+              <div class="msg-content" v-html="renderMd(streamingText) + '<span class=cursor>|</span>'"></div>
             </div>
           </div>
 
@@ -112,6 +112,35 @@ const quickQuestions = [
 ]
 
 const PIE_COLORS = ['#1a237e','#283593','#303f9f','#3949ab','#5c6bc0','#7986cb','#9fa8da','#c5cae9']
+
+function renderMd(text) {
+  if (!text) return ''
+  // Normalize newlines
+  let html = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  // Escape HTML
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  // Headings
+  html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^## (.+)$/gm, '<h4>$1</h4>')
+  html = html.replace(/^# (.+)$/gm, '<h4>$1</h4>')
+  // Horizontal rule
+  html = html.replace(/^---$/gm, '<hr>')
+  // Lists
+  html = html.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>')
+  html = html.replace(/^(\d+)[\.\)] (.+)$/gm, '<li>$2</li>')
+  // Wrap <li> groups in <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
+  html = html.replace(/<\/ul>\n<ul>/g, '\n')
+  // Line breaks
+  html = html.replace(/\n\n+/g, '<br><br>')
+  html = html.replace(/\n/g, '<br>')
+  // Clean up <br> around block elements
+  html = html.replace(/<br>\s*(<h4>|<hr>|<ul>)/g, '$1')
+  html = html.replace(/(<\/h4>|<\/hr>|<\/ul>)\s*<br>/g, '$1')
+  return html
+}
 
 async function loadStats() {
   try {
@@ -313,8 +342,13 @@ onMounted(() => { loadStats(); checkAi() })
 .msg-user { align-self: flex-end; }
 .msg-bot { align-self: flex-start; }
 .msg-content {
-  padding: 10px 16px; border-radius: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap;
+  padding: 10px 16px; border-radius: 12px; font-size: 13px; line-height: 1.7;
 }
+.msg-content ul { padding-left: 18px; margin: 4px 0; }
+.msg-content li { margin: 2px 0; }
+.msg-content h4 { font-size: 14px; margin: 8px 0 4px; }
+.msg-content hr { border: none; border-top: 1px solid #e4e7ed; margin: 10px 0; }
+.msg-content strong { color: #1a237e; }
 .msg-user .msg-content { background: #1a237e; color: #fff; border-bottom-right-radius: 4px; }
 .msg-bot .msg-content { background: #f0f2f5; color: #303133; border-bottom-left-radius: 4px; }
 

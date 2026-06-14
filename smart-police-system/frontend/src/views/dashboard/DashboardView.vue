@@ -4,18 +4,16 @@
       <el-button type="danger" size="small" @click="loadData">重新加载</el-button>
     </div>
 
-    <el-row :gutter="12">
-      <el-col :span="6" v-for="card in statCards" :key="card.label">
-        <div class="stat-card">
-          <div class="stat-label">{{ card.label }}</div>
-          <div v-if="loading" class="stat-loading">
-            <el-skeleton :rows="2" animated />
-          </div>
-          <div v-else-if="error" class="stat-error">加载失败</div>
-          <div v-else class="stat-num">{{ card.value }}</div>
+    <div class="stat-row">
+      <div class="stat-card" v-for="card in statCards" :key="card.label" :class="{ 'stat-alert': card.alert && card.value > 0 }">
+        <div class="stat-label">{{ card.label }}</div>
+        <div v-if="loading" class="stat-loading">
+          <el-skeleton :rows="2" animated />
         </div>
-      </el-col>
-    </el-row>
+        <div v-else-if="error" class="stat-error">加载失败</div>
+        <div v-else class="stat-num" :class="{ 'num-alert': card.alert && card.value > 0 }">{{ card.value }}</div>
+      </div>
+    </div>
 
     <el-row :gutter="12" style="margin-top:12px">
       <el-col :span="16">
@@ -86,7 +84,8 @@ const statCards = reactive([
   { label: '今日接警', value: '-' },
   { label: '在办案件', value: '-' },
   { label: '布控车辆', value: '-' },
-  { label: '在岗警员', value: '-' }
+  { label: '在岗警员', value: '-' },
+  { label: '待我处置', value: '-', alert: true }
 ])
 
 const alarmTypes = ref([])
@@ -157,7 +156,7 @@ async function loadData() {
   error.value = false
 
   // Reset stat cards
-  statCards.forEach(c => { c.value = '-' })
+  statCards.forEach(c => { c.value = '-' }); statCards[4].value = '-'
   recentAlarms.value = []
 
   // Dispose old chart instances
@@ -184,6 +183,12 @@ async function loadData() {
     statCards[2].value = s.controlledVehicle
     statCards[3].value = s.onDutyOfficer
 
+    // 查询分配给当前用户的待处置警情
+    try {
+      const res = await alarmApi.myTasks({ page: 1, size: 100 })
+      statCards[4].value = res.data?.total || 0
+    } catch { statCards[4].value = 0 }
+
     await nextTick()
     document.querySelectorAll('.stat-num').forEach((el, i) => {
       animateCount(el, [s.todayAlarm, s.activeCase, s.controlledVehicle, s.onDutyOfficer][i])
@@ -205,6 +210,8 @@ onMounted(loadData)
 </script>
 
 <style scoped>
+.stat-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.stat-row .stat-card { flex: 1; min-width: 0; }
 .stat-card {
   background: #fff;
   border: 1px solid #e4e7ed;
@@ -217,6 +224,8 @@ onMounted(loadData)
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 .stat-label { font-size: 14px; color: #909399; margin-bottom: 8px; }
+.stat-alert { border-color: #f56c6c; background: #fef0f0; }
+.num-alert { color: #f56c6c; }
 .stat-num { font-size: 26px; font-weight: 600; color: #303133; }
 .stat-loading { padding-top: 4px; }
 .stat-error { font-size: 13px; color: #c0c4cc; padding: 6px 0; }

@@ -73,4 +73,4 @@ ai:
     max-tokens: 1024
     temperature: 0.3
     connect-timeout: 30000
-    read-timeout: 60000
+    read-timeout: 120000

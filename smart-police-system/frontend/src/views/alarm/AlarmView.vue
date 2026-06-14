@@ -22,6 +22,7 @@
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="loadList">查询</el-button>
           <el-button :icon="Plus" @click="openCreate">接警录入</el-button>
+          <el-button type="success" plain @click="runDemo">演示流程</el-button>
         </el-form-item>
       </el-form>
 
@@ -51,6 +52,7 @@
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="viewDetail(row)">详情</el-button>
             <el-button v-if="row.status === 1" type="warning" link size="small" @click="openDispatch(row)">派发</el-button>
+            <el-button v-if="row.status === 1" type="success" link size="small" @click="upgradeToCase(row)">升级案件</el-button>
             <el-button v-if="[1,2,3].includes(row.status)" type="danger" link size="small" @click="handleClose(row)">关闭</el-button>
           </template>
         </el-table-column>
@@ -86,6 +88,9 @@
 
     <!-- 接警录入对话框 -->
     <el-dialog v-model="createVisible" title="接警录入" width="600px">
+      <div style="margin-bottom:12px">
+        <el-button size="small" @click="fillDemo">一键填入示例</el-button>
+      </div>
       <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="100px">
         <el-form-item label="报警时间" prop="alarmTime">
           <el-date-picker v-model="createForm.alarmTime" type="datetime" style="width:100%" />
@@ -106,10 +111,10 @@
         </el-form-item>
         <el-form-item label="紧急程度">
           <el-radio-group v-model="createForm.urgencyLevel">
-            <el-radio :label="1">一般</el-radio>
-            <el-radio :label="2">较紧急</el-radio>
-            <el-radio :label="3">紧急</el-radio>
-            <el-radio :label="4">特急</el-radio>
+            <el-radio :value="1">一般</el-radio>
+            <el-radio :value="2">较紧急</el-radio>
+            <el-radio :value="3">紧急</el-radio>
+            <el-radio :value="4">特急</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="警情描述" prop="alarmDesc">
@@ -121,11 +126,27 @@
         <el-button type="primary" :loading="submitting" @click="handleCreate">提交接警</el-button>
       </template>
     </el-dialog>
+
+    <!-- 派发对话框 -->
+    <el-dialog v-model="dispatchVisible" title="任务派发" width="480px">
+      <el-form label-width="80px">
+        <el-form-item label="警情编号"><strong>{{ dispatchTarget?.alarmNo }}</strong></el-form-item>
+        <el-form-item label="选择警员">
+          <el-select v-model="dispatchOfficerId" filterable placeholder="搜索警员" style="width:100%" @visible-change="loadOfficers">
+            <el-option v-for="o in officerList" :key="o.id" :label="`${o.realName}（${o.badgeNo}）— ${statusLabel(o.workStatus)}`" :value="o.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dispatchVisible = false">取消</el-button>
+        <el-button type="primary" :loading="dispatching" @click="handleDispatch">确认派发</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { Search, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { alarmApi } from '@/api/alarm'
@@ -175,6 +196,43 @@ async function loadList() {
   }
 }
 
+function fillDemo() {
+  Object.assign(createForm, {
+    alarmTime: new Date(),
+    callerName: '张先生',
+    callerPhone: '13812345678',
+    locationDetail: '海淀区中关村南大街5号',
+    alarmType: 'fight',
+    urgencyLevel: 2,
+    alarmDesc: '两名男子在商场门口发生口角后斗殴，其中一人手持啤酒瓶，另一人头部受伤流血，现场围观群众较多，需立即处置。'
+  })
+}
+
+async function runDemo() {
+  await openCreate()
+  await nextTick()
+  fillDemo()
+  await nextTick()
+  await handleCreate()
+  // 自动派发给张建国 (officer ID 2)
+  setTimeout(async () => {
+    try {
+      const res = await alarmApi.list({ page: 1, size: 1, status: 1 })
+      const latest = res?.data?.records?.[0]
+      if (latest) {
+        await alarmApi.dispatch(latest.id, 2)
+        ElMessage.success('已自动派发给张建国（P001）')
+        loadList()
+        setTimeout(() => fetchEquipRecommend(latest.id), 500)
+      } else {
+        console.warn('没有找到待派发警情')
+      }
+    } catch (e) {
+      console.error('自动派发失败', e)
+    }
+  }, 1500)
+}
+
 async function openCreate() {
   alarmTypes.value = await dictApi.get('alarm_type')
   createVisible.value = true
@@ -185,11 +243,14 @@ async function handleCreate() {
   submitting.value = true
   try {
     const res = await alarmApi.create(createForm)
+    const alarmId = res.data
     ElMessage.success('接警录入成功')
     createVisible.value = false
     loadList()
     // 自动触发 AI 装备推荐
-    fetchEquipRecommend(res.data)
+    if (alarmId) {
+      setTimeout(() => fetchEquipRecommend(alarmId), 500)
+    }
   } finally {
     submitting.value = false
   }
@@ -199,11 +260,56 @@ function viewDetail(row) {
   ElMessage.info(`警情编号：${row.alarmNo}`)
 }
 
+// 派发
+const dispatchVisible = ref(false)
+const dispatchTarget = ref(null)
+const dispatchOfficerId = ref(null)
+const dispatching = ref(false)
+const officerList = ref([])
+
+async function loadOfficers(show) {
+  if (show) {
+    try {
+      const { officerApi } = await import('@/api/officer')
+      const res = await officerApi.list({ workStatus: 'on_duty', page: 1, size: 50 })
+      officerList.value = res.data?.records || []
+    } catch { /* ignore */ }
+  }
+}
+
 function openDispatch(row) {
-  ElMessageBox.prompt('请输入处置警员ID', '任务派发', { inputPattern: /^\d+$/, inputErrorMessage: '请输入数字ID' })
-    .then(({ value }) => alarmApi.dispatch(row.id, Number(value)))
-    .then(() => { ElMessage.success('派发成功'); loadList() })
-    .catch(() => {})
+  dispatchTarget.value = row
+  dispatchOfficerId.value = null
+  dispatchVisible.value = true
+}
+
+async function handleDispatch() {
+  if (!dispatchOfficerId.value) { ElMessage.warning('请选择警员'); return }
+  dispatching.value = true
+  try {
+    await alarmApi.dispatch(dispatchTarget.value.id, dispatchOfficerId.value)
+    ElMessage.success('派发成功')
+    dispatchVisible.value = false
+    loadList()
+  } finally { dispatching.value = false }
+}
+
+// 升级为案件
+async function upgradeToCase(row) {
+  await ElMessageBox.confirm(`将警情 ${row.alarmNo} 升级为案件？`, '确认', { type: 'warning' })
+  try {
+    const { caseApi } = await import('@/api/caseinfo')
+    await caseApi.create({
+      caseName: row.alarmType + '案件',
+      caseCategory: 'criminal',
+      caseType: row.alarmType,
+      occurredAt: row.alarmTime,
+      locationDetail: row.locationDetail,
+      caseDesc: row.alarmDesc,
+      severityLevel: row.urgencyLevel
+    })
+    ElMessage.success('已升级为案件')
+  } catch { ElMessage.error('升级失败') }
 }
 
 async function handleClose(row) {
@@ -219,16 +325,19 @@ const equipResult = ref(null)
 const equipAlarmId = ref(null)
 
 async function fetchEquipRecommend(alarmId) {
+  if (!alarmId) return
   equipLoading.value = true
   equipResult.value = null
   equipAlarmId.value = alarmId
   try {
     const res = await alarmApi.equipmentRecommend(alarmId)
-    const text = typeof res.data === 'string' ? res.data : (res.data?.data || JSON.stringify(res.data))
+    const data = res.data || res
+    const text = typeof data === 'string' ? data : JSON.stringify(data)
     try { equipResult.value = JSON.parse(text) }
     catch { equipResult.value = { must: [], suggested: [], summary: text } }
-  } catch { /* AI 不可用 */ }
-  finally { equipLoading.value = false }
+  } catch (e) {
+    console.error('装备推荐失败', e)
+  } finally { equipLoading.value = false }
 }
 
 function closeEquipCard() {

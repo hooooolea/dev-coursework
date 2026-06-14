@@ -48,10 +48,10 @@ public class AiEquipmentService {
 
         StringBuilder equipList = new StringBuilder();
         for (EquipmentInfo e : equipment) {
-            equipList.append(String.format("%s | %s | %d\n",
+            equipList.append(String.format("%s | %s | %s\n",
                     e.getEquipName() != null ? e.getEquipName() : "-",
                     e.getEquipType() != null ? e.getEquipType() : "-",
-                    1));
+                    "可用"));
         }
 
         String prompt = PromptBuilder.buildEquipmentPrompt(
