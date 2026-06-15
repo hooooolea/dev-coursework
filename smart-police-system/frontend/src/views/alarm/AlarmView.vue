@@ -150,6 +150,7 @@ import { Search, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { alarmApi } from '@/api/alarm'
 import { dictApi } from '@/api/dict'
+import { officerApi } from '@/api/officer'
 
 const list = ref([])
 const total = ref(0)
@@ -281,7 +282,6 @@ const officerList = ref([])
 async function loadOfficers(show) {
   if (show) {
     try {
-      const { officerApi } = await import('@/api/officer')
       const res = await officerApi.list({ workStatus: 'on_duty', page: 1, size: 50 })
       officerList.value = res.data?.records || []
     } catch { /* ignore */ }
