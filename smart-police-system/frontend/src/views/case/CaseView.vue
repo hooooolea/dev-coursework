@@ -255,8 +255,11 @@ const detailVisible = ref(false)
 const detailTab = ref('progress')
 const currentCase = ref(null)
 const progressList = ref([])
-const progFormRef = ref()
+const evidenceList = ref([])
+const suspectList = ref([])
+const suspectLoading = ref(false)
 const progForm = reactive({ content: '', nextPlan: '' })
+const addProgressVisible = ref(false)
 
 const severityLabel = (v) => ['', '一般', '重要', '重大', '特重大'][v] || '-'
 const severityType  = (v) => ['', 'info', 'warning', 'danger', 'danger'][v] || 'info'

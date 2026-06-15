@@ -223,8 +223,8 @@ async function runDemo() {
       const res = await alarmApi.list({ page: 1, size: 1, status: 1 })
       const latest = res?.data?.records?.[0]
       if (latest) {
-        await alarmApi.dispatch(latest.id, 2)
-        ElMessage.success('已自动派发给张建国（P001）')
+        await alarmApi.dispatch(latest.id, 10)
+        ElMessage.success('已自动派发给张明（P010）')
         loadList()
         setTimeout(() => fetchEquipRecommend(latest.id), 500)
       } else {
