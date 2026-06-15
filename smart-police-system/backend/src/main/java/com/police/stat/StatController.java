@@ -133,6 +133,29 @@ public class StatController {
         return result;
     }
 
+    /** 警员近30天工作量排行 */
+    @GetMapping("/officer-workload")
+    public Result<List<Map<String, Object>>> officerWorkload() {
+        java.time.LocalDate since = java.time.LocalDate.now().minusDays(30);
+        List<OfficerInfo> officers = officerMapper.selectList(
+            new LambdaQueryWrapper<OfficerInfo>().eq(OfficerInfo::getIsDeleted, 0));
+        List<PatrolTask> tasks = patrolTaskMapper.selectList(
+            new LambdaQueryWrapper<PatrolTask>().ge(PatrolTask::getCreatedAt, since.atStartOfDay()));
+        Map<Long, Long> patrolByOfficer = tasks.stream()
+            .collect(Collectors.groupingBy(PatrolTask::getOfficerId, Collectors.counting()));
+        List<Map<String, Object>> result = officers.stream().map(o -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("officerId", o.getId());
+            item.put("name", o.getRealName());
+            item.put("badgeNo", o.getBadgeNo());
+            item.put("patrols", patrolByOfficer.getOrDefault(o.getId(), 0L));
+            item.put("workload", patrolByOfficer.getOrDefault(o.getId(), 0L));
+            return item;
+        }).sorted((a, b) -> Long.compare((Long) b.get("workload"), (Long) a.get("workload")))
+          .collect(Collectors.toList());
+        return Result.ok(result);
+    }
+
     /**
      * 警力效能统计
      */

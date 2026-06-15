@@ -133,6 +133,20 @@
           </div>
         </el-col>
       </el-row>
+
+      <!-- 警员近30天工作量排行 -->
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">近30天警员工作量排行</div>
+        <el-table :data="workloadList" size="small" v-loading="officerLoading">
+          <el-table-column type="index" label="排名" width="60" />
+          <el-table-column prop="badgeNo" label="警号" width="100" />
+          <el-table-column prop="name" label="姓名" min-width="120" />
+          <el-table-column prop="patrols" label="巡逻任务数" width="120" align="right" />
+          <el-table-column prop="workload" label="工作量" width="100" align="right">
+            <template #default="{ row }">{{ row.workload }} 次</template>
+          </el-table-column>
+        </el-table>
+      </div>
     </template>
 
     <!-- 警情报表导出入口 -->
@@ -159,6 +173,7 @@ const caseMonths   = ref(6)
 const compMode     = ref('mom')   // mom | yoy
 const caseData     = reactive({ total: null, closed: null, solveRate: null, byStatus: {}, mom: null, yoy: null })
 const officerData  = reactive({ total: null, onDuty: null, onDutyRate: null, statusDist: [], officerList: [] })
+const workloadList = ref([])
 const caseStatusRows = ref([])
 
 // 同比/环比计算
@@ -238,9 +253,13 @@ async function loadCaseStats() {
 async function loadOfficerStats() {
   officerLoading.value = true
   try {
-    const res = await statApi.officerStats()
+    const [res, wlRes] = await Promise.all([
+      statApi.officerStats(),
+      statApi.officerWorkload()
+    ])
     const d = res.data
     Object.assign(officerData, d)
+    workloadList.value = wlRes.data || []
     await nextTick()
     if (!officerPieChart) officerPieChart = echarts.init(officerPieRef.value)
     const pieData = (d.statusDist || []).map((item, i) => ({ ...item, itemStyle: { color: PIE_COLORS[i % PIE_COLORS.length] } }))

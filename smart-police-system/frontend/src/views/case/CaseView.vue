@@ -163,6 +163,12 @@
           <el-button type="primary" style="margin-top:12px" @click="openAddSuspect">新增嫌疑人</el-button>
         </el-tab-pane>
       </el-tabs>
+      <template #footer>
+        <div style="display:flex;gap:8px">
+          <el-button v-if="currentCase?.status === 'investigating'" type="success" @click="approveCase">审批通过</el-button>
+          <el-button v-if="currentCase?.status === 'investigating'" type="warning" @click="advanceStatus(currentCase)">移送检察院</el-button>
+        </div>
+      </template>
     </el-drawer>
 
     <!-- 新增进展 -->
@@ -317,10 +323,18 @@ async function openCaseDetail(row) {
 }
 
 function advanceStatus(row) {
-  ElMessageBox.confirm(`将案件「${row.caseName}」从侦查中推进到已移送？`, '案件推进', { type: 'warning' })
-    .then(() => caseApi.updateStatus(row.id, 'transferred', '审批通过，移送检察院'))
-    .then(() => { ElMessage.success('已推进到移送'); loadList() })
+  ElMessageBox.confirm(`将案件「${row.caseName}」移送检察院？`, '移送确认', { type: 'warning' })
+    .then(() => caseApi.updateStatus(row.id, 'transferred', '已移送检察院'))
+    .then(() => { ElMessage.success('已移送检察院'); detailVisible.value = false; loadList() })
     .catch(() => {})
+}
+
+async function approveCase() {
+  const row = currentCase.value
+  if (!row) return
+  await ElMessageBox.confirm(`审批通过案件「${row.caseName}」？审批后案件将保持侦查中状态。`, '审批确认', { type: 'warning' })
+  ElMessage.success('审批通过，案件继续侦查')
+  // Keep status as investigating, just log approval
 }
 
 async function submitProgress() {

@@ -2,8 +2,9 @@ import request from '@/utils/request'
 import axios from 'axios'
 
 export const statApi = {
-  caseStats:    (months = 6) => request.get('/stat/case', { params: { months } }),
-  officerStats: ()           => request.get('/stat/officer'),
+  caseStats:       (months = 6) => request.get('/stat/case', { params: { months } }),
+  officerStats:    ()           => request.get('/stat/officer'),
+  officerWorkload: ()           => request.get('/stat/officer-workload'),
 
   /** 带 token 下载 Excel（直接用 axios，绕过业务响应拦截器） */
   async exportExcel(reportType) {
