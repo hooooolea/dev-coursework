@@ -35,7 +35,8 @@
       <el-divider />
       <div style="font-size:12px;color:#909399">
         API Key 获取地址：<a href="https://platform.xiaomimimo.com" target="_blank">小米 MiMo 开放平台</a><br/>
-        模型：mimo-v2.5-pro，计费：Token Plan（按 input/output token 总数）
+        模型：mimo-v2.5-pro（文本推理），Token Plan 计费<br/>
+        <span style="color:#e6a23c">⚠️ 语音/视频/ASR/TTS 需按量付费 Key，Token Plan 仅支持文本推理</span>
       </div>
     </el-card>
   </div>

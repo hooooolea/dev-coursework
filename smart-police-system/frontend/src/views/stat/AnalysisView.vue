@@ -244,13 +244,23 @@ function fileToBase64(file) {
 async function handleAudioFile(file) {
   const raw = file.raw
   if (raw.size > 10 * 1024 * 1024) { ElMessage.warning('音频超过 10MB 限制'); return }
+  const ext = (raw.name || '').split('.').pop()?.toLowerCase()
+  if (!['wav','mp3','m4a','webm'].includes(ext)) { ElMessage.warning('仅支持 wav/mp3/m4a/webm 格式'); return }
   mediaLoading.value = true
   try {
     const base64 = await fileToBase64(raw)
-    const res = await aiApi.transcribe(base64)
-    const text = res.data?.data || res.data || ''
-    if (text) { input.value = text; ElMessage.success('识别完成，点击发送提问') }
-  } catch { ElMessage.error('识别失败') }
+    const fmt = ext === 'm4a' ? 'mp4' : ext === 'webm' ? 'webm' : ext
+    const res = await aiApi.transcribe(base64, fmt)
+    const text = (res.data?.data) || (typeof res.data === 'string' ? res.data : '')
+    if (text && text.length > 2) {
+      input.value = text
+      ElMessage.success('识别完成，点击发送提问')
+    } else {
+      ElMessage.warning('未识别到有效语音内容，请检查音频文件')
+    }
+  } catch (e) {
+    ElMessage.warning('语音识别需要按量付费 API Key（Token Plan 不支持 ASR 模型）')
+  }
   finally { mediaLoading.value = false }
 }
 
