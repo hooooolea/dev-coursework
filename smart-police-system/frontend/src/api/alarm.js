@@ -9,5 +9,6 @@ export const alarmApi = {
   dispatch: (id, officerId) => request.put(`/alarm/${id}/dispatch`, { officerId }),
   arrive: (dispatchId) => request.put(`/alarm/dispatch/${dispatchId}/arrive`),
   arriveByAlarm: (alarmId) => request.put(`/alarm/${alarmId}/arrive`),
-  close: (id, summary) => request.put(`/alarm/${id}/close`, { summary })
+  close: (id, summary) => request.put(`/alarm/${id}/close`, { summary }),
+  linkCase: (id, caseId) => request.put(`/alarm/${id}/link-case`, { caseId })
 }

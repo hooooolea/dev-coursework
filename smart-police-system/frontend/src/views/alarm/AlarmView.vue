@@ -67,23 +67,33 @@
         @current-change="loadList"
       />
 
-      <!-- AI 装备推荐 -->
-      <div v-if="equipResult" class="equip-card">
-        <div class="equip-card-header">
-          <span> AI 装备推荐 — 警情 #{{ equipAlarmId }}</span>
-          <el-button link size="small" @click="closeEquipCard">关闭</el-button>
-        </div>
-        <div v-if="equipResult.must && equipResult.must.length" class="equip-row">
-          <span class="equip-tag equip-must">必带</span>
-          <span v-for="e in equipResult.must" :key="e.name" class="equip-item">{{ e.name }}（{{ e.reason }}）</span>
-        </div>
-        <div v-if="equipResult.suggested && equipResult.suggested.length" class="equip-row">
-          <span class="equip-tag equip-suggest">建议</span>
-          <span v-for="e in equipResult.suggested" :key="e.name" class="equip-item">{{ e.name }}（{{ e.reason }}）</span>
-        </div>
-        <div v-if="equipResult.summary" class="equip-summary">{{ equipResult.summary }}</div>
-      </div>
     </el-card>
+
+    <!-- AI 装备推荐弹窗 -->
+    <el-dialog v-model="equipVisible" title="AI 智能分析" width="520px" :close-on-click-modal="false">
+      <div v-if="equipLoading" style="text-align:center;padding:30px">
+        <el-icon class="is-loading" size="40" color="#1a237e"><Loading /></el-icon>
+        <div style="margin-top:16px;font-size:15px;color:#303133">AI 正在分析警情，推荐装备方案...</div>
+        <div style="margin-top:8px;font-size:13px;color:#909399">预计需要 10-30 秒</div>
+      </div>
+      <div v-else-if="equipResult">
+        <div style="font-size:14px;color:#909399;margin-bottom:12px">警情 #{{ equipAlarmId }} 装备推荐</div>
+        <div v-if="equipResult.must && equipResult.must.length" style="margin-bottom:10px">
+          <span style="font-weight:600;color:#f56c6c">必带 </span>
+          <span v-for="e in equipResult.must" :key="e.name" style="margin-left:6px;font-size:13px">{{ e.name }}（{{ e.reason }}）</span>
+        </div>
+        <div v-if="equipResult.suggested && equipResult.suggested.length" style="margin-bottom:10px">
+          <span style="font-weight:600;color:#67c23a">建议 </span>
+          <span v-for="e in equipResult.suggested" :key="e.name" style="margin-left:6px;font-size:13px">{{ e.name }}（{{ e.reason }}）</span>
+        </div>
+        <div v-if="equipResult.summary" style="font-size:12px;color:#909399;padding-top:10px;border-top:1px dashed #e4e7ed">{{ equipResult.summary }}</div>
+      </div>
+      <template #footer>
+        <el-button @click="equipVisible = false">关闭</el-button>
+        <el-button type="success" @click="autoCreateCase" :disabled="!equipAlarmId">一键立案</el-button>
+      </template>
+    </el-dialog>
+  </div>
 
     <!-- 接警录入对话框 -->
     <el-dialog v-model="createVisible" title="接警录入" width="600px">
@@ -146,7 +156,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { alarmApi } from '@/api/alarm'
 import { dictApi } from '@/api/dict'
@@ -319,10 +329,11 @@ async function upgradeToCase(row) {
       caseDesc: row.alarmDesc || '',
       severityLevel: row.urgencyLevel || 2
     }
-    await caseApi.create(caseData)
-    // 关联网关警情
-    await alarmApi.close(row.id, '已升级为案件')
-    ElMessage.success('已升级为案件，原警情已关闭')
+    const caseRes = await caseApi.create(caseData)
+    const caseId = caseRes.data
+    // 关联警情与案件（不关闭警情，案件继续侦查）
+    await alarmApi.linkCase(row.id, caseId)
+    ElMessage.success(`已升级为案件 #${caseId}，原警情关联保持处置中`)
     loadList()
   } catch (e) { ElMessage.error('升级失败: ' + (e.message || '')) }
 }
@@ -335,12 +346,14 @@ async function handleClose(row) {
 }
 
 // AI 装备推荐
+const equipVisible = ref(false)
 const equipLoading = ref(false)
 const equipResult = ref(null)
 const equipAlarmId = ref(null)
 
 async function fetchEquipRecommend(alarmId) {
   if (!alarmId) return
+  equipVisible.value = true
   equipLoading.value = true
   equipResult.value = null
   equipAlarmId.value = alarmId
@@ -351,13 +364,23 @@ async function fetchEquipRecommend(alarmId) {
     try { equipResult.value = JSON.parse(text) }
     catch { equipResult.value = { must: [], suggested: [], summary: text } }
   } catch (e) {
-    console.error('装备推荐失败', e)
+    equipResult.value = { must: [], suggested: [], summary: 'AI 服务暂不可用' }
   } finally { equipLoading.value = false }
 }
 
-function closeEquipCard() {
-  equipResult.value = null
-  equipAlarmId.value = null
+async function autoCreateCase() {
+  const row = { alarmType: 'fight', alarmTime: new Date().toISOString(), locationDetail: '', alarmDesc: '', urgencyLevel: 2 }
+  try {
+    const { caseApi } = await import('@/api/caseinfo')
+    const caseRes = await caseApi.create({
+      caseName: '警情关联案件', caseCategory: 'criminal', caseType: 'other',
+      occurredAt: new Date().toISOString(), locationDetail: '', caseDesc: '由 AI 装备推荐自动立案', severityLevel: 2
+    })
+    await alarmApi.linkCase(equipAlarmId.value, caseRes.data)
+    ElMessage.success(`已立案 #${caseRes.data}`)
+    equipVisible.value = false
+    loadList()
+  } catch { ElMessage.error('立案失败') }
 }
 
 onMounted(loadList)
@@ -365,19 +388,4 @@ onMounted(loadList)
 
 <style scoped>
 .search-form { margin-bottom: 0; }
-
-.equip-card {
-  margin-top: 16px; padding: 16px; background: #fafbfc;
-  border: 1px solid #e4e7ed; border-radius: 8px;
-}
-.equip-card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 12px;
-}
-.equip-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-.equip-tag { font-size: 12px; padding: 1px 8px; border-radius: 3px; font-weight: 600; }
-.equip-must { background: #fef0f0; color: #f56c6c; }
-.equip-suggest { background: #f0f9eb; color: #67c23a; }
-.equip-item { font-size: 13px; color: #606266; }
-.equip-summary { font-size: 12px; color: #909399; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e4e7ed; }
 </style>

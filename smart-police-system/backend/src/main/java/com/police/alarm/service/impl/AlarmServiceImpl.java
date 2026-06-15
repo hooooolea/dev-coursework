@@ -128,6 +128,13 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         dispatchMapper.updateById(dispatch);
     }
 
+    public void linkCase(Long alarmId, Long caseId) {
+        AlarmRecord alarm = getById(alarmId);
+        if (alarm == null) throw BusinessException.of("警情不存在");
+        alarm.setRelatedCaseId(caseId);
+        updateById(alarm);
+    }
+
     @Override
     public void close(Long alarmId, String summary) {
         AlarmRecord alarm = getById(alarmId);

@@ -85,6 +85,14 @@ public class AlarmController {
         return Result.ok();
     }
 
+    /** 关联案件（升级为案件时调用） */
+    @PutMapping("/{id}/link-case")
+    @PreAuthorize("hasAuthority('alarm:edit')")
+    public Result<?> linkCase(@PathVariable Long id, @RequestBody Map<String, Long> body) {
+        alarmService.linkCase(id, body.get("caseId"));
+        return Result.ok();
+    }
+
     /** AI 装备推荐（接警后自动触发） */
     @GetMapping("/{id}/equipment-recommend")
     @PreAuthorize("hasAuthority('alarm:view')")

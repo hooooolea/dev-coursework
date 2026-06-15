@@ -15,4 +15,5 @@ public interface AlarmService extends IService<AlarmRecord> {
     void arrive(Long dispatchId);
     void arriveByAlarm(Long alarmId);
     void close(Long alarmId, String summary);
+    void linkCase(Long alarmId, Long caseId);
 }
