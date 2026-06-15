@@ -8,6 +8,8 @@ import com.police.ai.service.AiEquipmentService;
 import com.police.alarm.dto.AlarmCreateDTO;
 import com.police.caseinfo.entity.CaseInfo;
 import com.police.caseinfo.mapper.CaseInfoMapper;
+import com.police.system.entity.SysDict;
+import com.police.system.mapper.SysDictMapper;
 import com.police.alarm.dto.AlarmQueryDTO;
 import com.police.alarm.entity.AlarmDispatch;
 import com.police.alarm.entity.AlarmRecord;
@@ -40,7 +42,15 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
     private final OfficerInfoMapper officerMapper;
     private final AiEquipmentService aiEquipmentService;
     private final CaseInfoMapper caseMapper;
+    private final SysDictMapper dictMapper;
     private final AtomicInteger seqCounter = new AtomicInteger(0);
+
+    private String translateType(String code) {
+        if (code == null) return "警情";
+        List<SysDict> list = dictMapper.selectList(
+            new LambdaQueryWrapper<SysDict>().eq(SysDict::getDictType, "alarm_type").eq(SysDict::getDictValue, code));
+        return list.isEmpty() ? code : list.get(0).getDictLabel().replace("警情", "");
+    }
 
     @Override
     public Long create(AlarmCreateDTO dto) {
@@ -122,7 +132,7 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
 
         // 5. 自动同步到案件管理
         CaseInfo caseInfo = new CaseInfo();
-        String typeName = alarm.getAlarmType() != null ? alarm.getAlarmType() : "警情";
+        String typeName = translateType(alarm.getAlarmType());
         String loc = alarm.getLocationDetail() != null ? alarm.getLocationDetail() : "";
         if (loc.length() > 10) loc = loc.substring(0, 10);
         caseInfo.setCaseName(typeName + "案·" + loc);

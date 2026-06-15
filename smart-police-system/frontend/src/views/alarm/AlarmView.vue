@@ -9,7 +9,7 @@
       <!-- 搜索栏 -->
       <el-form inline :model="query" class="search-form">
         <el-form-item label="范围">
-          <el-radio-group v-model="queryScope" size="small" @change="onScopeChange">
+          <el-radio-group v-model="queryScope" size="default" @change="onScopeChange">
             <el-radio-button value="all">全部</el-radio-button>
             <el-radio-button value="mine">我的警情</el-radio-button>
           </el-radio-group>
@@ -42,18 +42,18 @@
         <el-table-column prop="locationDetail" label="事发地址" min-width="180" show-overflow-tooltip />
         <el-table-column prop="urgencyLevel" label="紧急程度" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="urgencyType(row.urgencyLevel)" size="small">{{ urgencyLabel(row.urgencyLevel) }}</el-tag>
+            <el-tag :type="urgencyType(row.urgencyLevel)" size="default">{{ urgencyLabel(row.urgencyLevel) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="statusType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
+            <el-tag :type="statusType(row.status)" size="default">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="alarmTime" label="报警时间" width="160" />
         <el-table-column label="关联" width="110" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.relatedCaseId" type="success" size="small" style="cursor:pointer" @click="$router.push('/case')">
+            <el-tag v-if="row.relatedCaseId" type="success" size="default" style="cursor:pointer" @click="$router.push('/case')">
               已立案 #{{ row.relatedCaseId }}
             </el-tag>
             <span v-else style="color:#c0c4cc">-</span>
@@ -61,10 +61,10 @@
         </el-table-column>
         <el-table-column label="操作" width="300">
           <template #default="{ row }">
-            <el-button v-if="row.status === 1" type="warning" link size="small" @click="openDispatch(row)">派发</el-button>
-            <el-button v-if="row.status === 1" type="success" link size="small" @click="upgradeToCase(row)">升级案件</el-button>
-            <el-button v-if="[1,2,3].includes(row.status)" type="danger" link size="small" @click="handleClose(row)">关闭</el-button>
-            <el-button type="danger" link size="small" @click="handleDelAlarm(row)">删除</el-button>
+            <el-button v-if="row.status === 1" type="warning" link size="default" @click="openDispatch(row)">派发</el-button>
+            <el-button v-if="row.status === 1" type="success" link size="default" @click="upgradeToCase(row)">升级案件</el-button>
+            <el-button v-if="[1,2,3].includes(row.status)" type="danger" link size="default" @click="handleClose(row)">关闭</el-button>
+            <el-button type="danger" link size="default" @click="handleDelAlarm(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -84,28 +84,28 @@
     <!-- AI 装备推荐弹窗 -->
     <el-dialog v-model="equipVisible" title="AI 智能分析" width="520px" :close-on-click-modal="false">
       <div v-if="equipLoading" style="text-align:center;padding:30px">
-        <el-icon class="is-loading" size="40" color="#1a237e"><Loading /></el-icon>
-        <div style="margin-top:16px;font-size:15px;color:#303133">AI 正在分析警情，推荐装备方案...</div>
-        <div style="margin-top:8px;font-size:13px;color:#909399">预计需要 10-30 秒</div>
+        <el-icon class="is-loading" size="48" color="#1a237e"><Loading /></el-icon>
+        <div style="margin-top:16px;font-size:17px;color:#303133">AI 正在分析警情，推荐装备方案...</div>
+        <div style="margin-top:8px;font-size:15px;color:#909399">预计需要 10-30 秒</div>
       </div>
       <div v-else-if="equipResult">
-        <div style="font-size:14px;color:#909399;margin-bottom:16px">警情 #{{ equipAlarmId }} · AI 智能分析</div>
+        <div style="font-size:16px;color:#909399;margin-bottom:16px">警情 #{{ equipAlarmId }} · AI 智能分析</div>
         <div v-if="equipResult.must && equipResult.must.length" style="margin-bottom:12px">
           <div style="font-weight:600;color:#f56c6c;margin-bottom:6px"> 必带装备</div>
           <div v-for="e in equipResult.must" :key="e.name" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fafafa">
-            <el-tag type="danger" size="small">{{ e.name }}</el-tag>
-            <span style="font-size:13px;color:#606266">{{ e.reason }}</span>
+            <el-tag type="danger" size="default">{{ e.name }}</el-tag>
+            <span style="font-size:15px;color:#606266">{{ e.reason }}</span>
           </div>
         </div>
         <div v-if="equipResult.suggested && equipResult.suggested.length" style="margin-bottom:12px">
           <div style="font-weight:600;color:#67c23a;margin-bottom:6px"> 建议携带</div>
           <div v-for="e in equipResult.suggested" :key="e.name" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fafafa">
-            <el-tag type="success" size="small">{{ e.name }}</el-tag>
-            <span style="font-size:13px;color:#606266">{{ e.reason }}</span>
+            <el-tag type="success" size="default">{{ e.name }}</el-tag>
+            <span style="font-size:15px;color:#606266">{{ e.reason }}</span>
           </div>
         </div>
-        <div v-if="equipResult.summary" style="font-size:13px;color:#909399;padding-top:10px;border-top:1px dashed #e4e7ed;line-height:1.6">{{ equipResult.summary }}</div>
-        <div v-if="!equipResult.must && !equipResult.suggested && equipResult.summary" style="font-size:13px;color:#606266;padding:12px;background:#fafafa;border-radius:6px;white-space:pre-wrap;line-height:1.7">{{ equipResult.summary }}</div>
+        <div v-if="equipResult.summary" style="font-size:15px;color:#909399;padding-top:10px;border-top:1px dashed #e4e7ed;line-height:1.6">{{ equipResult.summary }}</div>
+        <div v-if="!equipResult.must && !equipResult.suggested && equipResult.summary" style="font-size:15px;color:#606266;padding:12px;background:#fafafa;border-radius:6px;white-space:pre-wrap;line-height:1.7">{{ equipResult.summary }}</div>
       </div>
       <template #footer>
         <el-button @click="equipVisible = false">关闭</el-button>
@@ -116,7 +116,7 @@
     <!-- 接警录入对话框 -->
     <el-dialog v-model="createVisible" title="接警录入" width="600px">
       <div style="margin-bottom:12px">
-        <el-button size="small" @click="fillDemo">一键填入示例</el-button>
+        <el-button size="default" @click="fillDemo">一键填入示例</el-button>
       </div>
       <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="100px">
         <el-form-item label="报警时间" prop="alarmTime">
