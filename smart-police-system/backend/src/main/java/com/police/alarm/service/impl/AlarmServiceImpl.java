@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.police.ai.service.AiEquipmentService;
 import com.police.alarm.dto.AlarmCreateDTO;
+import com.police.caseinfo.entity.CaseInfo;
+import com.police.caseinfo.mapper.CaseInfoMapper;
 import com.police.alarm.dto.AlarmQueryDTO;
 import com.police.alarm.entity.AlarmDispatch;
 import com.police.alarm.entity.AlarmRecord;
@@ -22,6 +24,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -36,6 +39,7 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
     private final AlarmDispatchMapper dispatchMapper;
     private final OfficerInfoMapper officerMapper;
     private final AiEquipmentService aiEquipmentService;
+    private final CaseInfoMapper caseMapper;
     private final AtomicInteger seqCounter = new AtomicInteger(0);
 
     @Override
@@ -116,7 +120,42 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         alarm.setStatus(2);
         updateById(alarm);
 
-        // 5. 前端自行触发 AI 装备推荐（避免阻塞派发响应）
+        // 5. 自动同步到案件管理
+        CaseInfo caseInfo = new CaseInfo();
+        String typeName = alarm.getAlarmType() != null ? alarm.getAlarmType() : "警情";
+        String loc = alarm.getLocationDetail() != null ? alarm.getLocationDetail() : "";
+        if (loc.length() > 10) loc = loc.substring(0, 10);
+        caseInfo.setCaseName(typeName + "案·" + loc);
+        caseInfo.setCaseCategory("criminal");
+        caseInfo.setCaseType(alarm.getAlarmType() != null ? alarm.getAlarmType() : "other");
+        caseInfo.setOccurredAt(alarm.getAlarmTime());
+        caseInfo.setLocationDetail(alarm.getLocationDetail());
+        caseInfo.setCaseDesc(alarm.getAlarmDesc());
+        caseInfo.setSeverityLevel(alarm.getUrgencyLevel() != null ? alarm.getUrgencyLevel() : 1);
+        caseInfo.setStatus("investigating");
+        caseInfo.setFileDate(LocalDate.now());
+        caseInfo.setLeadOfficerId(officerId);
+        caseInfo.setCaseNo(generateCaseNo());
+        caseMapper.insert(caseInfo);
+
+        // 6. 关联警情与案件
+        alarm.setRelatedCaseId(caseInfo.getId());
+        updateById(alarm);
+    }
+
+    private final AtomicInteger caseSeqCounter = new AtomicInteger(1);
+    private String generateCaseNo() {
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String prefix = "AJ" + date;
+        List<CaseInfo> today = caseMapper.selectList(
+            new LambdaQueryWrapper<CaseInfo>().likeRight(CaseInfo::getCaseNo, prefix).orderByDesc(CaseInfo::getCaseNo).last("LIMIT 1"));
+        int maxSeq = 0;
+        if (!today.isEmpty()) {
+            String last = today.get(0).getCaseNo();
+            try { maxSeq = Integer.parseInt(last.substring(last.length() - 3)); } catch (Exception ignored) {}
+        }
+        int seq = Math.max(caseSeqCounter.incrementAndGet(), maxSeq + 1) % 1000;
+        return prefix + String.format("%03d", seq);
     }
 
     @Override

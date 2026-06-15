@@ -1,6 +1,11 @@
 <template>
   <div>
-    <el-card shadow="never">
+    <el-card shadow="never" class="case-page">
+      <div class="page-header">
+        <el-icon size="20" color="#1a237e"><Folder /></el-icon>
+        <span class="page-title">案件管理</span>
+        <span class="page-desc">立案登记 · 侦查进展 · 证据管理 · 嫌疑人关联</span>
+      </div>
       <el-form inline :model="query">
         <el-form-item label="关键词">
           <el-input v-model="query.keyword" placeholder="案件名称/编号" clearable style="width:180px" />
@@ -31,7 +36,9 @@
       <el-table :data="list" v-loading="loading" stripe>
         <el-table-column prop="caseNo" label="案件编号" width="160" />
         <el-table-column prop="caseName" label="案件名称" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="caseType" label="案件类型" width="110" />
+        <el-table-column label="案件类型" width="110">
+          <template #default="{ row }">{{ caseTypeLabel(row.caseType) }}</template>
+        </el-table-column>
         <el-table-column prop="severityLevel" label="等级" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="severityType(row.severityLevel)" size="small">
@@ -115,6 +122,10 @@
 
     <!-- 统一案件详情抽屉 -->
     <el-drawer v-model="detailVisible" :title="`案件详情 - ${currentCase?.caseNo || ''}`" size="650px">
+      <div v-if="sourceAlarm" style="margin-bottom:12px;padding:8px 12px;background:#f0f9eb;border-radius:6px;font-size:13px">
+         来源警情：<strong>{{ sourceAlarm.alarmNo }}</strong>
+         <span style="color:#909399;margin-left:8px">{{ sourceAlarm.alarmType }} · {{ sourceAlarm.locationDetail }}</span>
+      </div>
       <el-tabs v-model="detailTab" type="card">
         <el-tab-pane label="侦查进展" name="progress">
           <div v-for="p in progressList" :key="p.id" class="progress-item">
@@ -228,7 +239,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Plus, Upload } from '@element-plus/icons-vue'
+import { Search, Plus, Upload, Folder } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { caseApi } from '@/api/caseinfo'
 import { dictApi } from '@/api/dict'
@@ -242,6 +253,7 @@ const createVisible = ref(false)
 const submitting = ref(false)
 const createFormRef = ref()
 const caseTypes = ref([])
+const caseTypeLabel = (v) => caseTypes.value.find(d => d.dictValue === v)?.dictLabel || v || '-'
 
 const createForm = reactive({
   caseName: '', caseCategory: '', caseType: '',
@@ -260,6 +272,7 @@ const createRules = {
 const detailVisible = ref(false)
 const detailTab = ref('progress')
 const currentCase = ref(null)
+const sourceAlarm = ref(null)
 const progressList = ref([])
 const evidenceList = ref([])
 const suspectList = ref([])
@@ -311,11 +324,19 @@ async function handleDel(row) {
 async function openCaseDetail(row) {
   currentCase.value = row
   detailTab.value = 'progress'
+  sourceAlarm.value = null
   const [pRes, eRes, sRes] = await Promise.all([
     caseApi.listProgress(row.id),
     caseApi.listEvidence(row.id),
     caseApi.listSuspect(row.id)
   ])
+  // 查找来源警情
+  try {
+    const { alarmApi } = await import('@/api/alarm')
+    const aRes = await alarmApi.list({ page: 1, size: 100 })
+    const related = aRes.data?.records?.find(a => a.relatedCaseId === row.id)
+    if (related) sourceAlarm.value = related
+  } catch { /* ignore */ }
   progressList.value = pRes.data || []
   evidenceList.value = eRes.data || []
   suspectList.value = sRes.data || []

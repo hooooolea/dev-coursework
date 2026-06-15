@@ -1,6 +1,11 @@
 <template>
   <div>
-    <el-card shadow="never">
+    <el-card shadow="never" class="alarm-page">
+      <div class="page-header">
+        <el-icon size="20" color="#1565c0"><Bell /></el-icon>
+        <span class="page-title">报警受理</span>
+        <span class="page-desc">接警录入 · 任务派发 · 处置跟踪</span>
+      </div>
       <!-- 搜索栏 -->
       <el-form inline :model="query" class="search-form">
         <el-form-item label="范围">
@@ -46,13 +51,20 @@
           </template>
         </el-table-column>
         <el-table-column prop="alarmTime" label="报警时间" width="160" />
-        <el-table-column label="操作" width="160">
+        <el-table-column label="关联" width="110" align="center">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="viewDetail(row)">详情</el-button>
+            <el-tag v-if="row.relatedCaseId" type="success" size="small" style="cursor:pointer" @click="$router.push('/case')">
+              已立案 #{{ row.relatedCaseId }}
+            </el-tag>
+            <span v-else style="color:#c0c4cc">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="300">
+          <template #default="{ row }">
             <el-button v-if="row.status === 1" type="warning" link size="small" @click="openDispatch(row)">派发</el-button>
-            <el-button v-if="row.status === 2" type="success" link size="small" @click="handleArrive(row)">现场打卡</el-button>
             <el-button v-if="row.status === 1" type="success" link size="small" @click="upgradeToCase(row)">升级案件</el-button>
             <el-button v-if="[1,2,3].includes(row.status)" type="danger" link size="small" @click="handleClose(row)">关闭</el-button>
+            <el-button type="danger" link size="small" @click="handleDelAlarm(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -77,23 +89,29 @@
         <div style="margin-top:8px;font-size:13px;color:#909399">预计需要 10-30 秒</div>
       </div>
       <div v-else-if="equipResult">
-        <div style="font-size:14px;color:#909399;margin-bottom:12px">警情 #{{ equipAlarmId }} 装备推荐</div>
-        <div v-if="equipResult.must && equipResult.must.length" style="margin-bottom:10px">
-          <span style="font-weight:600;color:#f56c6c">必带 </span>
-          <span v-for="e in equipResult.must" :key="e.name" style="margin-left:6px;font-size:13px">{{ e.name }}（{{ e.reason }}）</span>
+        <div style="font-size:14px;color:#909399;margin-bottom:16px">警情 #{{ equipAlarmId }} · AI 智能分析</div>
+        <div v-if="equipResult.must && equipResult.must.length" style="margin-bottom:12px">
+          <div style="font-weight:600;color:#f56c6c;margin-bottom:6px"> 必带装备</div>
+          <div v-for="e in equipResult.must" :key="e.name" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fafafa">
+            <el-tag type="danger" size="small">{{ e.name }}</el-tag>
+            <span style="font-size:13px;color:#606266">{{ e.reason }}</span>
+          </div>
         </div>
-        <div v-if="equipResult.suggested && equipResult.suggested.length" style="margin-bottom:10px">
-          <span style="font-weight:600;color:#67c23a">建议 </span>
-          <span v-for="e in equipResult.suggested" :key="e.name" style="margin-left:6px;font-size:13px">{{ e.name }}（{{ e.reason }}）</span>
+        <div v-if="equipResult.suggested && equipResult.suggested.length" style="margin-bottom:12px">
+          <div style="font-weight:600;color:#67c23a;margin-bottom:6px"> 建议携带</div>
+          <div v-for="e in equipResult.suggested" :key="e.name" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fafafa">
+            <el-tag type="success" size="small">{{ e.name }}</el-tag>
+            <span style="font-size:13px;color:#606266">{{ e.reason }}</span>
+          </div>
         </div>
-        <div v-if="equipResult.summary" style="font-size:12px;color:#909399;padding-top:10px;border-top:1px dashed #e4e7ed">{{ equipResult.summary }}</div>
+        <div v-if="equipResult.summary" style="font-size:13px;color:#909399;padding-top:10px;border-top:1px dashed #e4e7ed;line-height:1.6">{{ equipResult.summary }}</div>
+        <div v-if="!equipResult.must && !equipResult.suggested && equipResult.summary" style="font-size:13px;color:#606266;padding:12px;background:#fafafa;border-radius:6px;white-space:pre-wrap;line-height:1.7">{{ equipResult.summary }}</div>
       </div>
       <template #footer>
         <el-button @click="equipVisible = false">关闭</el-button>
         <el-button type="success" @click="autoCreateCase" :disabled="!equipAlarmId">一键立案</el-button>
       </template>
     </el-dialog>
-  </div>
 
     <!-- 接警录入对话框 -->
     <el-dialog v-model="createVisible" title="接警录入" width="600px">
@@ -156,11 +174,12 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
-import { Search, Plus, Loading } from '@element-plus/icons-vue'
+import { Search, Plus, Loading, Bell } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { alarmApi } from '@/api/alarm'
 import { dictApi } from '@/api/dict'
 import { officerApi } from '@/api/officer'
+import { caseApi } from '@/api/caseinfo'
 
 const list = ref([])
 const total = ref(0)
@@ -212,12 +231,12 @@ async function loadList() {
 function fillDemo() {
   Object.assign(createForm, {
     alarmTime: new Date(),
-    callerName: '张先生',
-    callerPhone: '13812345678',
-    locationDetail: '海淀区中关村南大街5号',
-    alarmType: 'fight',
+    callerName: '李女士',
+    callerPhone: '13900001234',
+    locationDetail: '朝阳区三里屯酒吧街18号',
+    alarmType: 'theft',
     urgencyLevel: 2,
-    alarmDesc: '两名男子在商场门口发生口角后斗殴，其中一人手持啤酒瓶，另一人头部受伤流血，现场围观群众较多，需立即处置。'
+    alarmDesc: '顾客在酒吧消费时发现随身挎包被盗，内有现金3000元、身份证及银行卡数张。嫌疑人疑似趁其起身跳舞时从后方拿走，已逃离现场约10分钟。'
   })
 }
 
@@ -246,8 +265,7 @@ async function runDemo() {
   }, 1500)
 }
 
-async function openCreate() {
-  alarmTypes.value = await dictApi.get('alarm_type')
+function openCreate() {
   createVisible.value = true
 }
 
@@ -257,10 +275,10 @@ async function handleCreate() {
   try {
     const res = await alarmApi.create(createForm)
     const alarmId = res.data
+    lastAlarmData.value = { ...createForm }
     ElMessage.success('接警录入成功')
     createVisible.value = false
     loadList()
-    // 自动触发 AI 装备推荐
     if (alarmId) {
       setTimeout(() => fetchEquipRecommend(alarmId), 500)
     }
@@ -271,15 +289,6 @@ async function handleCreate() {
 
 function viewDetail(row) {
   ElMessage.info(`警情编号：${row.alarmNo}`)
-}
-
-async function handleArrive(row) {
-  try {
-    // arrive API needs dispatch ID, not alarm ID
-    await alarmApi.arriveByAlarm(row.id)
-    ElMessage.success('已打卡，状态变为处置中')
-    loadList()
-  } catch { ElMessage.error('操作失败') }
 }
 
 // 派发
@@ -319,7 +328,6 @@ async function handleDispatch() {
 async function upgradeToCase(row) {
   await ElMessageBox.confirm(`将警情 ${row.alarmNo} 升级为案件？系统将自动生成案件编号并关联该警情。`, '确认升级', { type: 'warning' })
   try {
-    const { caseApi } = await import('@/api/caseinfo')
     const caseData = {
       caseName: (row.alarmTypeLabel || row.alarmType) + '案件',
       caseCategory: row.alarmType === 'traffic' ? 'traffic' : 'criminal',
@@ -340,8 +348,16 @@ async function upgradeToCase(row) {
 
 async function handleClose(row) {
   const { value } = await ElMessageBox.prompt('请填写处置结果摘要', '关闭警情', { inputType: 'textarea' })
+  if (!value) return
   await alarmApi.close(row.id, value)
   ElMessage.success('警情已关闭')
+  loadList()
+}
+
+async function handleDelAlarm(row) {
+  await ElMessageBox.confirm(`确定删除警情「${row.alarmNo}」？此操作不可恢复。`, '确认删除', { type: 'warning' })
+  await alarmApi.del(row.id)
+  ElMessage.success('已删除')
   loadList()
 }
 
@@ -359,31 +375,54 @@ async function fetchEquipRecommend(alarmId) {
   equipAlarmId.value = alarmId
   try {
     const res = await alarmApi.equipmentRecommend(alarmId)
-    const data = res.data || res
-    const text = typeof data === 'string' ? data : JSON.stringify(data)
-    try { equipResult.value = JSON.parse(text) }
-    catch { equipResult.value = { must: [], suggested: [], summary: text } }
+    let raw = res.data || res
+    if (typeof raw !== 'string') raw = JSON.stringify(raw)
+    // 清理 markdown 代码块包裹（开头和结尾的 ```json / ```）
+    raw = raw.replace(/^```(?:json)?\s*\n?/gm, '').replace(/\n?```\s*$/gm, '').trim()
+    try {
+      equipResult.value = JSON.parse(raw)
+    } catch {
+      // 解析失败则展示原文
+      equipResult.value = { must: [], suggested: [], summary: raw }
+    }
   } catch (e) {
-    equipResult.value = { must: [], suggested: [], summary: 'AI 服务暂不可用' }
+    equipResult.value = { must: [], suggested: [], summary: 'AI 服务暂不可用，请检查 API Key 配置' }
   } finally { equipLoading.value = false }
 }
 
+const lastAlarmData = ref(null)
+
 async function autoCreateCase() {
-  const row = { alarmType: 'fight', alarmTime: new Date().toISOString(), locationDetail: '', alarmDesc: '', urgencyLevel: 2 }
+  const alarm = lastAlarmData.value || {}
+  const token = localStorage.getItem('accessToken')
   try {
-    const { caseApi } = await import('@/api/caseinfo')
-    const caseRes = await caseApi.create({
-      caseName: '警情关联案件', caseCategory: 'criminal', caseType: 'other',
-      occurredAt: new Date().toISOString(), locationDetail: '', caseDesc: '由 AI 装备推荐自动立案', severityLevel: 2
+    const payload = {
+      caseName: (alarm.alarmType || '警情') + '案件',
+      caseCategory: (alarm.alarmType === 'traffic' ? 'traffic' : 'criminal'),
+      caseType: alarm.alarmType || 'other',
+      occurredAt: alarm.alarmTime instanceof Date ? alarm.alarmTime.toISOString() : (alarm.alarmTime || new Date().toISOString()),
+      locationDetail: alarm.locationDetail || '未知地址',
+      caseDesc: alarm.alarmDesc || '无描述',
+      severityLevel: Number(alarm.urgencyLevel) || 2
+    }
+    const res = await fetch('/api/case', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify(payload)
     })
-    await alarmApi.linkCase(equipAlarmId.value, caseRes.data)
-    ElMessage.success(`已立案 #${caseRes.data}`)
+    const data = await res.json()
+    if (data.code !== 200) throw new Error(data.message || '创建失败')
+    await alarmApi.linkCase(equipAlarmId.value, data.data)
+    ElMessage.success(`已立案 #${data.data}`)
     equipVisible.value = false
     loadList()
-  } catch { ElMessage.error('立案失败') }
+  } catch (e) { ElMessage.error('立案失败: ' + (e.message || '请重试')) }
 }
 
-onMounted(loadList)
+onMounted(async () => {
+  alarmTypes.value = await dictApi.get('alarm_type')
+  loadList()
+})
 </script>
 
 <style scoped>

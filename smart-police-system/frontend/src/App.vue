@@ -67,4 +67,9 @@ body {
 
 /* 卡片间距 */
 .el-row { row-gap: 16px; }
+
+/* 页面头部 */
+.page-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f0f0f0; }
+.page-title { font-size:16px; font-weight:600; color:#303133; }
+.page-desc { font-size:13px; color:#909399; }
 </style>

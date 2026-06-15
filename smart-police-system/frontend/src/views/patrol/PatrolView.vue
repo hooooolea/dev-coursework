@@ -35,7 +35,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220">
+        <el-table-column label="操作" width="280">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="viewCheckins(row)">打卡记录</el-button>
             <el-button v-if="row.status === 'pending'" link size="small" @click="handleAccept(row)">接收</el-button>

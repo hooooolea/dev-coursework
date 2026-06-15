@@ -39,7 +39,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="entryDate" label="入职日期" width="120" />
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openEdit(row)">编辑</el-button>
             <el-button link size="small" @click="openStatusChange(row)">更新状态</el-button>

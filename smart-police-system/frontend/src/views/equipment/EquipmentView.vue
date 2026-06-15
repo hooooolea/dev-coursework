@@ -46,7 +46,7 @@
             <el-tag :type="statusTagType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="220">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="viewBorrows(row)">借还记录</el-button>
             <el-button v-if="row.status === 'idle'" type="warning" link size="small" @click="openBorrow(row)">领用</el-button>

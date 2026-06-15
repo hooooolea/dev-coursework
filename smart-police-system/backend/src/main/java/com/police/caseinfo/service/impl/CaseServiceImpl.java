@@ -97,7 +97,15 @@ public class CaseServiceImpl extends ServiceImpl<CaseInfoMapper, CaseInfo> imple
 
     private String generateCaseNo() {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int seq = seqCounter.incrementAndGet() % 1000;
-        return "AJ" + date + String.format("%03d", seq);
+        String prefix = "AJ" + date;
+        List<CaseInfo> today = baseMapper.selectList(
+            new LambdaQueryWrapper<CaseInfo>().likeRight(CaseInfo::getCaseNo, prefix).orderByDesc(CaseInfo::getCaseNo).last("LIMIT 1"));
+        int maxSeq = 0;
+        if (!today.isEmpty()) {
+            String last = today.get(0).getCaseNo();
+            try { maxSeq = Integer.parseInt(last.substring(last.length() - 3)); } catch (Exception ignored) {}
+        }
+        int seq = Math.max(seqCounter.incrementAndGet(), maxSeq + 1) % 1000;
+        return prefix + String.format("%03d", seq);
     }
 }

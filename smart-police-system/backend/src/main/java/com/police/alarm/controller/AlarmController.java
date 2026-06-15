@@ -93,6 +93,13 @@ public class AlarmController {
         return Result.ok();
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('alarm:edit')")
+    public Result<?> delete(@PathVariable Long id) {
+        alarmService.removeById(id);
+        return Result.ok();
+    }
+
     /** AI 装备推荐（接警后自动触发） */
     @GetMapping("/{id}/equipment-recommend")
     @PreAuthorize("hasAuthority('alarm:view')")

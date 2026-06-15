@@ -21,7 +21,7 @@
         <if test="q.endDate != null">
             AND DATE(alarm_time) &lt;= #{q.endDate}
         </if>
-        ORDER BY urgency_level DESC, alarm_time DESC
+        ORDER BY alarm_time DESC
     </select>
 
 </mapper>
