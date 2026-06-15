@@ -375,7 +375,6 @@ async function handleEditSave() {
 const addEvidenceVisible = ref(false)
 const evidSaving         = ref(false)
 const evidFormRef        = ref()
-const evidenceList       = ref([])
 const evidForm           = reactive({ evidenceName: '', evidenceType: 'physical', collectTime: null, collectLocation: '', storageLocation: '', description: '' })
 // 证据文件上传相关状态
 const evidenceFileList      = ref([])
@@ -449,8 +448,6 @@ async function handleDelEvidence(row) {
 
 // 嫌疑人管理
 const suspectVisible    = ref(false)
-const suspectLoading    = ref(false)
-const suspectList       = ref([])
 const suspectFormVisible= ref(false)
 const suspectSaving     = ref(false)
 const suspectFormRef    = ref()

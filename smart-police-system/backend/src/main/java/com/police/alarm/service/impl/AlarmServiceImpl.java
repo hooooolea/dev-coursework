@@ -116,20 +116,7 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         alarm.setStatus(2);
         updateById(alarm);
 
-        // 5. 异步触发 AI 装备推荐（不阻塞主流程）
-        triggerEquipRecommend(alarm, officer);
-    }
-
-    @Async
-    public void triggerEquipRecommend(AlarmRecord alarm, OfficerInfo officer) {
-        try {
-            String result = aiEquipmentService.recommend(
-                alarm.getAlarmType() != null ? alarm.getAlarmType() : "routine",
-                "", alarm.getLocationDetail() != null ? alarm.getLocationDetail() : "", "");
-            log.info("派发后AI装备推荐完成 alarmId={} officer={}", alarm.getId(), officer.getRealName());
-        } catch (Exception e) {
-            log.warn("派发后AI装备推荐失败 alarmId={}", alarm.getId(), e.getMessage());
-        }
+        // 5. 前端自行触发 AI 装备推荐（避免阻塞派发响应）
     }
 
     @Override

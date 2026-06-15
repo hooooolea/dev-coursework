@@ -61,21 +61,61 @@
 - 站内通知 / `upgradeToCase` 不传 `relatedAlarmId`
 
 ## Next Steps
-- 1. ~~跑完 v4 步骤 5-9 截图~~ ✅ 完成，但发现 3 处 BUG
+- 1. ~~跑完 v4 步骤 5-9 截图~~ ✅ 完成
 - 2. ~~按 v4 实际跑通结果重写"步骤 3-9 完整版"验收脚本~~ ✅ v4 文档已交付
-- 3. 桌面 PPT 数据库设计页替换（**等你贴完再说**）
-- 4. 等你对 fig-2-2 v2 / fig-4-1-1 v3 / fig-4-1-2 v2 / 数据库设计页反馈
-- 5. 同意 → 写"改图后必跑 md5sum | diff"进 `~/.mavis/memory/MEMORY.md`
-- 6. **新 BUG 清单**（v4 实测发现）：
-  - CaseView.vue `evidenceList` const 声明位置在模板引用之后（362 行声明但 129/144 行用）→ 抽屉打不开
-  - 案件管理无"待审批"独立 Tab（只有 el-select 筛选项）
-  - 案件状态机无 `pending` 状态（createCase 直接写 investigating）
-  - 无"审批通过"独立按钮（"推进"按钮直接 investigating→transferred）
-  - 无"检察院接收"独立状态
-  - 驾驶舱无"警员工作量排行"卡片
-  - AI 模块无"智能研判"独立页面（只有装备推荐）
-  - `Officer.currentLoad` 字段未返（弹窗无法按"未满负荷"过滤）
-  - `upgradeToCase` 不传 `relatedAlarmId`（BJ→AJ 关联未真正落地）
+- 3. **开发文档 v1.0 → v1.1** ✅ 完成
+- 4. **汇报稿 v6.3 → v6.4** ✅ 完成
+- 5. **新账号 zhangming / zhaoyong** ✅ 登录成功
+- 6. **v6.5 修复 3 后端 BUG** ✅ 全部跑通步骤 5/6/7（路由冲突 + entity 字段 + lambda cache）
+- 7. **验收脚本 v6.5** ✅ 完成（`docs/验收脚本-步骤3-9-v6.5.md`）
+- 8. 桌面 PPT 数据库设计页替换（**等你贴完再说**）
+- 9. 等你对 fig-2-2 v2 / fig-4-1-1 v3 / fig-4-1-2 v2 / 数据库设计页反馈
+- 10. 同意 → 写"改图后必跑 md5sum | diff"进 `~/.mavis/memory/MEMORY.md`
+- 11. v6.5 仍存 BUG：
+  - ❌ `approveCase` 不动 status（按钮只弹提示）
+  - ❌ gender 字段 TINYINT vs entity String 类型不匹配
+  - ❌ case_suspect 表 vs entity 字段双向缺
+  - ❌ 状态机无 pending / 检察院接收 状态
+  - ❌ 案件管理无"待审批"独立 Tab
+  - ❌ 驾驶舱无"警员工作量排行"
+  - ❌ AI 智能研判未实现
+  - ❌ `Officer.currentLoad` 字段未返
+  - ❌ `upgradeToCase` 不传 `relatedAlarmId`
+  - ❌ zhangming / zhaoyong 账号未分配角色（authorities=[]）
+
+## v6.5 关键发现（2026-06-15 10:08）
+
+| 步骤 | v4 状态 | **v6.5 状态** | 关键修复 |
+|------|---------|---------------|----------|
+| 3 派发 | ✅ 跑通 | ✅ 跑通 | 无 |
+| 4 接警 | ✅ 跑通 | ✅ 跑通 | 无 |
+| **5 立案** | ❌ 抽屉打不开 | ✅ **抽屉能开** | **路由冲突修复** |
+| **6 侦查** | ❌ 抽屉打不开 | ✅ **3 Tab 全跑通** | **路由冲突 + entity 字段修复** |
+| **7 审批** | ❌ 抽屉打不开 | ✅ **推进能跑** | **路由冲突修复；按钮实际存在** |
+| 8 驾驶舱 | ⚠️ 缺排行 | ⚠️ 缺排行 | 无 |
+| 9 AI 研判 | ❌ 未实现 | ❌ 未实现 | 无 |
+
+## 修复清单（v6.5 后端修复）
+1. ✅ **路由冲突 BUG**：删 `CaseController` 4 个 suspect 方法（listSuspect/addSuspect/updateSuspect/deleteSuspect）
+2. ✅ **Entity 字段不匹配 SQL**：`CaseSuspect` 4 字段加 `@TableField(exist=false)` 标注（age/suspectRole/description/isDeleted）
+3. ✅ **MyBatis-Plus lambda cache 缺失**：`CaseSuspectService` 删除 `eq(isDeleted, 0)` 过滤
+
+## v6.5 实测新发现
+- **"审批通过"按钮实际存在**（v1.1/v6.4 文档写错了），位置在抽屉底部"移送检察院"按钮左边
+- **"移送检察院"按钮实际存在**（v1.1/v6.4 文档写错了），叫"移送检察院"而不是"推进"
+- **"审批通过"按钮**是纯 UI 操作（不动 status），属于前端逻辑 BUG
+- **抽屉底部 3 按钮**：`新增嫌疑人` + `审批通过` + `移送检察院`（v-if status==='investigating'）
+
+## v6.5 配图清单（docs/assets/test-shots/v6.5/）
+- 01-case-detail-drawer-progress.png：案件详情抽屉首次打开（v6.5 修复后）
+- 02-add-progress-dialog.png：新增进展弹窗
+- 04-progress-displayed.png：抽屉显示完整进展记录
+- 05-evidence-tab.png：证据材料 Tab
+- 06-suspect-tab.png：嫌疑人 Tab
+- 07-add-suspect-dialog.png：新增嫌疑人弹窗
+- 08-suspect-list.png：API 写入后的嫌疑人列表
+- 09-advance-confirm.png：移送检察院确认弹窗
+- 10-after-transferred.png：zhaoyong 案件页 AJ20260615001 已移送
 
 ## v4 验收结果（2026-06-15 09:30）
 

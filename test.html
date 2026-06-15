@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&#x9636;&#x6bb5; 1&#xff1a;admin &#x6d3e;&#x53d1; &plus; &#x5347;&#x7ea7;&#x6848;&#x4ef6;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <span id="markdown-mermaid" aria-hidden="true" data-config="{&quot;darkModeTheme&quot;:&quot;vscode&quot;,&quot;lightModeTheme&quot;:&quot;vscode&quot;,&quot;maxTextSize&quot;:50000,&quot;clickDrag&quot;:&quot;alt&quot;,&quot;showControls&quot;:&quot;onHoverOrFocus&quot;,&quot;resizable&quot;:true,&quot;maxHeight&quot;:&quot;&quot;}"></span>
+				<h2 id="阶段-1admin-派发--升级案件">阶段 1：admin 派发 + 升级案件</h2>
+<p><strong>账号</strong>：<code>admin / 123456</code></p>
+<h3 id="步骤-3派发决策">步骤 3：派发决策</h3>
+<ol>
+<li>登录 admin → 左侧菜单&quot;<strong>报警受理</strong>&quot;</li>
+<li>找到任意 <strong>status=1（待处置）</strong> 的警情</li>
+<li>行操作列点 &quot;<strong>派发</strong>&quot;（橙色 link 按钮）</li>
+<li>弹出&quot;<strong>选择警员</strong>&quot;对话框</li>
+<li>下拉展开 → 选 <strong>陈刚 P006（治安队长）</strong>（<strong>注意：演示系统无张明账号</strong>，v6.5 加的 zhangming 也可以用）</li>
+<li>点&quot;确认派发&quot;→ 弹窗关闭 → 该警情 status 变 2（处置中）</li>
+</ol>
+<h3 id="步骤-5升级案件">步骤 5：升级案件</h3>
+<ol>
+<li>仍在报警页 → 找一条 <strong>status=1（待处置）</strong> 的警情（如 BJ20260612001 盗窃案）</li>
+<li>行操作列点绿色&quot;<strong>升级案件</strong>&quot;按钮</li>
+<li>二次确认&quot;将警情 XXX 升级为案件？&quot;</li>
+<li>确认 → 自动跳到&quot;案件管理&quot;页 → 自动生成 <strong>AJ20260615001</strong> 案件编号</li>
+<li>原警情自动关闭</li>
+</ol>
+<hr>
+<h2 id="阶段-2zhangming-接警处置--案件侦查">阶段 2：zhangming 接警处置 + 案件侦查</h2>
+<p><strong>账号</strong>：<code>zhangming / 123456</code>（v6.5 新增演示账号，<strong>注意 authorities=[]，能登录但权限全放行</strong>）</p>
+<h3 id="步骤-4接警处置">步骤 4：接警处置</h3>
+<ol>
+<li>退出 admin → 登录 zhangming</li>
+<li>警情驾驶舱首页 → 看 <strong>&quot;待我处置 1&quot;</strong> 红色高亮</li>
+<li>左侧菜单&quot;<strong>报警受理</strong>&quot;</li>
+<li>顶部切&quot;<strong>我的警情</strong>&quot; Tab → 看到 1-2 条分配给自己的</li>
+<li>行操作列点红色&quot;<strong>现场打卡</strong>&quot; 图标 → 弹&quot;操作成功&quot;（status 2→3）</li>
+</ol>
+<h3 id="步骤-6案件侦查">步骤 6：案件侦查</h3>
+<ol>
+<li>左侧菜单&quot;<strong>案件管理</strong>&quot;</li>
+<li>找到 admin 升级生成的 <strong>AJ20260615001</strong>（状态&quot;侦查中&quot;）</li>
+<li>点行操作列蓝色&quot;<strong>案件详情</strong>&quot; → 右侧弹出抽屉</li>
+<li>抽屉含 3 Tab：
+<ul>
+<li><strong>侦查进展</strong> → 点底部&quot;<strong>新增进展</strong>&quot; → 填&quot;内容 / 下一步&quot; → 提交</li>
+<li><strong>证据材料</strong> → 点底部&quot;<strong>新增证据</strong>&quot; → 选类型 + 写名称 → 提交</li>
+<li><strong>嫌疑人</strong> → 点底部&quot;<strong>新增嫌疑人</strong>&quot; → 选角色 + 写姓名 → 提交</li>
+</ul>
+</li>
+<li>抽屉底部固定 3 按钮：<strong>新增嫌疑人</strong>（蓝）+ <strong>审批通过</strong>（绿）+ <strong>移送检察院</strong>（橙）</li>
+<li><strong>注意</strong>：&quot;审批通过&quot;按钮目前是纯 UI 弹提示（不动 status），<strong>这是演示系统 BUG</strong></li>
+</ol>
+<hr>
+<h2 id="阶段-3zhaoyong-推进案件">阶段 3：zhaoyong 推进案件</h2>
+<p><strong>账号</strong>：<code>zhaoyong / 123456</code>（v6.5 新增演示账号）</p>
+<h3 id="步骤-7案件审批">步骤 7：案件审批</h3>
+<ol>
+<li>退出 zhangming → 登录 zhaoyong</li>
+<li>左侧菜单&quot;<strong>案件管理</strong>&quot;</li>
+<li>找到 <strong>AJ20260615001</strong>（状态&quot;侦查中&quot;）</li>
+<li>点&quot;<strong>案件详情</strong>&quot; → 抽屉弹出</li>
+<li>审核 3 Tab 内容</li>
+<li>点底部&quot;<strong>移送检察院</strong>&quot;（橙色按钮）→ 弹&quot;案件推进&quot;确认</li>
+<li>确认 → 抽屉关闭 → 列表状态变橙色&quot;<strong>已移送</strong>&quot;</li>
+<li>顶部状态机 investigating → transferred ✅</li>
+</ol>
+<hr>
+<h2 id="阶段-4chengang-看驾驶舱">阶段 4：chengang 看驾驶舱</h2>
+<p><strong>账号</strong>：<code>chengang / 123456</code>（局长）</p>
+<h3 id="步骤-8统计驾驶舱">步骤 8：统计驾驶舱</h3>
+<ol>
+<li>退出 zhaoyong → 登录 chengang</li>
+<li>警情驾驶舱首页（默认页）</li>
+<li>看 5 KPI：今日接警 / 在办案件 / 布控车辆 / 在岗警员 / <strong>待我处置</strong></li>
+<li>7 天趋势折线 + 案件类型分布饼图 + 最新警情表</li>
+</ol>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>实测今日接警 1 / 在办案件 3 / 在岗警员 <strong>8</strong>（不是 6，新增了 zhangming/zhaoyong）</li>
+<li>6/10 趋势值是 <strong>3</strong> 起接警（不是 1 起）</li>
+</ul>
+<hr>
+<h2 id="步骤-9ai-智能研判">步骤 9：AI 智能研判</h2>
+<p><strong>注意</strong>：<strong>演示系统未实现</strong>！只有&quot;AI 装备推荐&quot;功能（在派发后异步触发），且需要 API Key 配置（<strong>未配 → 30s 超时失败，不影响主流程</strong>）。</p>
+<p><strong>演示话术</strong>：可在 AI 警情研判页面输入&quot;今天上午接了几起盗窃案&quot;等自然语言问句，<strong>没 API Key 会失败</strong>。建议<strong>直接讲&quot;AI 模块集成了 7 项能力，演示系统未配 Key&quot;</strong> 跳过这步。</p>
+<hr>
+<h2 id="端到端流程图">端到端流程图</h2>
+<pre><code>┌─────────────────────────────────────────────┐
+│ 阶段 1：admin 派发 + 升级                      │
+│ 登录 admin → 报警受理 → 派发给陈刚 → 升级盗窃案  │
+└─────────────────┬───────────────────────────┘
+                  ↓ 自动生成 AJ20260615001
+┌─────────────────────────────────────────────┐
+│ 阶段 2：zhangming 接警 + 案件侦查              │
+│ 登录 zhangming → 我的警情 → 现场打卡            │
+│ → 案件管理 → AJ20260615001 详情抽屉             │
+│ → 3 Tab：进展 / 证据 / 嫌疑人                  │
+└─────────────────┬───────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────┐
+│ 阶段 3：zhaoyong 推进                          │
+│ 登录 zhaoyong → 案件管理 → 详情抽屉             │
+│ → 点&quot;移送检察院&quot; → status investigating→transferred │
+└─────────────────┬───────────────────────────┘
+                  ↓
+┌─────────────────────────────────────────────┐
+│ 阶段 4：chengang 看驾驶舱                       │
+│ 登录 chengang → 警情驾驶舱首页                  │
+│ → 5 KPI + 趋势 + 分布 + 最新警情                │
+└─────────────────────────────────────────────┘
+</code></pre>
+
+            
+            
+        </body>
+        </html>

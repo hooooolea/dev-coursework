@@ -84,13 +84,9 @@ function renderMd(text) {
   html = html.replace(/^# (.+)$/gm, '<h4>$1</h4>')
   html = html.replace(/^---$/gm, '<hr>')
   html = html.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>')
-  html = html.replace(/^(\d+)[\.\)] (.+)$/gm, '<li>$2</li>')
+  html = html.replace(/^\d+[\.\)] (.+)$/gm, '<li>$2</li>')
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
-  html = html.replace(/<\/ul>\n<ul>/g, '\n')
-  html = html.replace(/\n\n+/g, '<br><br>')
   html = html.replace(/\n/g, '<br>')
-  html = html.replace(/<br>\s*(<h4>|<hr>|<ul>)/g, '$1')
-  html = html.replace(/(<\/h4>|<\/hr>|<\/ul>)\s*<br>/g, '$1')
   return html
 }
 

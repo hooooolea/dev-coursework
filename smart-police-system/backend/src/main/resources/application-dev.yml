@@ -1,5 +1,5 @@
 server:
-  port: 8081   # 哈基米后端占用 8080，本项目改 8081 避免冲突
+  port: 8080
 
 spring:
   datasource:

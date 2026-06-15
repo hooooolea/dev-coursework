@@ -7,9 +7,7 @@ import com.police.caseinfo.dto.CaseQueryDTO;
 import com.police.caseinfo.entity.CaseEvidence;
 import com.police.caseinfo.entity.CaseInfo;
 import com.police.caseinfo.entity.CaseProgress;
-import com.police.caseinfo.entity.CaseSuspect;
 import com.police.caseinfo.mapper.CaseEvidenceMapper;
-import com.police.caseinfo.mapper.CaseSuspectMapper;
 import com.police.caseinfo.service.CaseService;
 import com.police.common.annotation.OperationLog;
 import com.police.common.config.FileStorageConfig;
@@ -31,7 +29,6 @@ public class CaseController {
 
     private final CaseService caseService;
     private final CaseEvidenceMapper evidenceMapper;
-    private final CaseSuspectMapper suspectMapper;
     private final FileStorageService fileStorageService;
     private final FileStorageConfig fileStorageConfig;
 
@@ -144,45 +141,6 @@ public class CaseController {
     }
 
     /* ====== 嫌疑人管理 ====== */
-
-    @GetMapping("/{id}/suspect")
-    @PreAuthorize("hasAuthority('case:view')")
-    public Result<List<CaseSuspect>> listSuspect(@PathVariable Long id) {
-        return Result.ok(suspectMapper.selectList(
-                new LambdaQueryWrapper<CaseSuspect>()
-                        .eq(CaseSuspect::getCaseId, id)
-                        .eq(CaseSuspect::getIsDeleted, 0)
-                        .orderByAsc(CaseSuspect::getCreatedAt)));
-    }
-
-    @PostMapping("/{id}/suspect")
-    @PreAuthorize("hasAuthority('case:edit')")
-    @OperationLog(module = "案件管理", action = "新增嫌疑人")
-    public Result<Long> addSuspect(@PathVariable Long id, @RequestBody CaseSuspect suspect) {
-        suspect.setCaseId(id);
-        suspectMapper.insert(suspect);
-        return Result.ok(suspect.getId());
-    }
-
-    @PutMapping("/{id}/suspect/{suspectId}")
-    @PreAuthorize("hasAuthority('case:edit')")
-    @OperationLog(module = "案件管理", action = "更新嫌疑人")
-    public Result<?> updateSuspect(@PathVariable Long id,
-                                   @PathVariable Long suspectId,
-                                   @RequestBody CaseSuspect suspect) {
-        suspect.setId(suspectId);
-        suspect.setCaseId(id);
-        suspectMapper.updateById(suspect);
-        return Result.ok();
-    }
-
-    @DeleteMapping("/{id}/suspect/{suspectId}")
-    @PreAuthorize("hasAuthority('case:edit')")
-    @OperationLog(module = "案件管理", action = "删除嫌疑人")
-    public Result<?> deleteSuspect(@PathVariable Long id, @PathVariable Long suspectId) {
-        suspectMapper.deleteById(suspectId);
-        return Result.ok();
-    }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('case:del')")

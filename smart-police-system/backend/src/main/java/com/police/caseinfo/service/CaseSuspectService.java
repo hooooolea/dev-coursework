@@ -18,7 +18,6 @@ public class CaseSuspectService {
         return suspectMapper.selectList(
                 new LambdaQueryWrapper<CaseSuspect>()
                         .eq(CaseSuspect::getCaseId, caseId)
-                        .eq(CaseSuspect::getIsDeleted, 0)
                         .orderByAsc(CaseSuspect::getCreatedAt));
     }
 
