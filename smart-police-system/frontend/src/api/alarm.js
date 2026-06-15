@@ -8,5 +8,6 @@ export const alarmApi = {
   equipmentRecommend: (id) => request.get(`/alarm/${id}/equipment-recommend`, { timeout: 60000 }),
   dispatch: (id, officerId) => request.put(`/alarm/${id}/dispatch`, { officerId }),
   arrive: (dispatchId) => request.put(`/alarm/dispatch/${dispatchId}/arrive`),
+  arriveByAlarm: (alarmId) => request.put(`/alarm/${alarmId}/arrive`),
   close: (id, summary) => request.put(`/alarm/${id}/close`, { summary })
 }

@@ -61,6 +61,14 @@ public class AlarmController {
         return Result.ok();
     }
 
+    @PutMapping("/{id}/arrive")
+    @PreAuthorize("hasAuthority('alarm:dispatch')")
+    @OperationLog(module = "报警受理", action = "到达现场")
+    public Result<?> arriveByAlarm(@PathVariable Long id) {
+        alarmService.arriveByAlarm(id);
+        return Result.ok();
+    }
+
     @PutMapping("/dispatch/{dispatchId}/arrive")
     @PreAuthorize("hasAuthority('alarm:dispatch')")
     @OperationLog(module = "报警受理", action = "到达现场")

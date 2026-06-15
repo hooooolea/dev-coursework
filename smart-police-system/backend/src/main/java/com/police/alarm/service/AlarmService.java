@@ -13,5 +13,6 @@ public interface AlarmService extends IService<AlarmRecord> {
     IPage<AlarmRecord> listMyTasks(int page, int size);
     void dispatch(Long alarmId, Long officerId);
     void arrive(Long dispatchId);
+    void arriveByAlarm(Long alarmId);
     void close(Long alarmId, String summary);
 }

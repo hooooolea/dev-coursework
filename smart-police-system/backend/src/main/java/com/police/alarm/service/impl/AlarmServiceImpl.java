@@ -75,6 +75,13 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         return baseMapper.selectPage(new Page<>(page, size), q);
     }
 
+    public void arriveByAlarm(Long alarmId) {
+        List<AlarmDispatch> list = dispatchMapper.selectList(
+            new LambdaQueryWrapper<AlarmDispatch>().eq(AlarmDispatch::getAlarmId, alarmId));
+        if (list.isEmpty()) throw BusinessException.of("该警情未派发");
+        arrive(list.get(0).getId());
+    }
+
     @Override
     public void dispatch(Long alarmId, Long officerId) {
         AlarmRecord alarm = getById(alarmId);

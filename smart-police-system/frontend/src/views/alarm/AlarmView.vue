@@ -3,20 +3,18 @@
     <el-card shadow="never">
       <!-- 搜索栏 -->
       <el-form inline :model="query" class="search-form">
+        <el-form-item label="范围">
+          <el-radio-group v-model="queryScope" size="small" @change="onScopeChange">
+            <el-radio-button value="all">全部</el-radio-button>
+            <el-radio-button value="mine">我的警情</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="query.status" clearable placeholder="全部" style="width:120px">
             <el-option label="待处置" :value="1" />
             <el-option label="处置中" :value="2" />
             <el-option label="已处置" :value="3" />
             <el-option label="已关闭" :value="4" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="紧急程度">
-          <el-select v-model="query.urgencyLevel" clearable placeholder="全部" style="width:120px">
-            <el-option label="一般" :value="1" />
-            <el-option label="较紧急" :value="2" />
-            <el-option label="紧急" :value="3" />
-            <el-option label="特急" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -52,6 +50,7 @@
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="viewDetail(row)">详情</el-button>
             <el-button v-if="row.status === 1" type="warning" link size="small" @click="openDispatch(row)">派发</el-button>
+            <el-button v-if="row.status === 2" type="success" link size="small" @click="handleArrive(row)">现场打卡</el-button>
             <el-button v-if="row.status === 1" type="success" link size="small" @click="upgradeToCase(row)">升级案件</el-button>
             <el-button v-if="[1,2,3].includes(row.status)" type="danger" link size="small" @click="handleClose(row)">关闭</el-button>
           </template>
@@ -156,6 +155,8 @@ const list = ref([])
 const total = ref(0)
 const loading = ref(false)
 const query = reactive({ status: null, urgencyLevel: null, page: 1, size: 20 })
+const queryScope = ref('all')
+function onScopeChange() { query.page = 1; loadList() }
 
 const createVisible = ref(false)
 const submitting = ref(false)
@@ -188,7 +189,8 @@ const statusType   = (v) => ({ 1: 'danger', 2: 'warning', 3: 'success', 4: 'info
 async function loadList() {
   loading.value = true
   try {
-    const res = await alarmApi.list(query)
+    const apiMethod = queryScope.value === 'mine' ? alarmApi.myTasks : alarmApi.list
+    const res = await apiMethod(query)
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
   } finally {
@@ -260,6 +262,15 @@ function viewDetail(row) {
   ElMessage.info(`警情编号：${row.alarmNo}`)
 }
 
+async function handleArrive(row) {
+  try {
+    // arrive API needs dispatch ID, not alarm ID
+    await alarmApi.arriveByAlarm(row.id)
+    ElMessage.success('已打卡，状态变为处置中')
+    loadList()
+  } catch { ElMessage.error('操作失败') }
+}
+
 // 派发
 const dispatchVisible = ref(false)
 const dispatchTarget = ref(null)
@@ -296,20 +307,24 @@ async function handleDispatch() {
 
 // 升级为案件
 async function upgradeToCase(row) {
-  await ElMessageBox.confirm(`将警情 ${row.alarmNo} 升级为案件？`, '确认', { type: 'warning' })
+  await ElMessageBox.confirm(`将警情 ${row.alarmNo} 升级为案件？系统将自动生成案件编号并关联该警情。`, '确认升级', { type: 'warning' })
   try {
     const { caseApi } = await import('@/api/caseinfo')
-    await caseApi.create({
-      caseName: row.alarmType + '案件',
-      caseCategory: 'criminal',
-      caseType: row.alarmType,
-      occurredAt: row.alarmTime,
-      locationDetail: row.locationDetail,
-      caseDesc: row.alarmDesc,
-      severityLevel: row.urgencyLevel
-    })
-    ElMessage.success('已升级为案件')
-  } catch { ElMessage.error('升级失败') }
+    const caseData = {
+      caseName: (row.alarmTypeLabel || row.alarmType) + '案件',
+      caseCategory: row.alarmType === 'traffic' ? 'traffic' : 'criminal',
+      caseType: row.alarmType || 'other',
+      occurredAt: row.alarmTime || new Date().toISOString(),
+      locationDetail: row.locationDetail || '',
+      caseDesc: row.alarmDesc || '',
+      severityLevel: row.urgencyLevel || 2
+    }
+    await caseApi.create(caseData)
+    // 关联网关警情
+    await alarmApi.close(row.id, '已升级为案件')
+    ElMessage.success('已升级为案件，原警情已关闭')
+    loadList()
+  } catch (e) { ElMessage.error('升级失败: ' + (e.message || '')) }
 }
 
 async function handleClose(row) {

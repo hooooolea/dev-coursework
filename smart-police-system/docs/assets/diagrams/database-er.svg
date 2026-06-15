@@ -1,0 +1,345 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1a237e"/>
+    </marker>
+    <marker id="arrowBiz" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1565c0"/>
+    </marker>
+    <marker id="arrowRes" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#00838f"/>
+    </marker>
+    <marker id="arrowAi" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#6a1b9a"/>
+    </marker>
+    <linearGradient id="sys" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a237e"/><stop offset="100%" stop-color="#283593"/></linearGradient>
+    <linearGradient id="biz" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1565c0"/><stop offset="100%" stop-color="#1976d2"/></linearGradient>
+    <linearGradient id="res" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00838f"/><stop offset="100%" stop-color="#0097a7"/></linearGradient>
+    <linearGradient id="ai" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6a1b9a"/><stop offset="100%" stop-color="#7b1fa2"/></linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="920" fill="#f5f6f8" rx="8"/>
+
+  <!-- Title -->
+  <text x="600" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a237e">智能警务管理系统 — 数据库 ER 图</text>
+  <text x="600" y="52" text-anchor="middle" font-size="12" fill="#909399">31 张表 · 21 张有演示数据 · 319 条记录 · RBAC 权限模型</text>
+
+  <!-- ============================================================ -->
+  <!-- 1. 系统管理表组 (8 张) y 70~150                              -->
+  <!-- ============================================================ -->
+  <rect x="20" y="68" width="1160" height="82" rx="6" fill="#e8eaf6" stroke="#1a237e" stroke-width="1"/>
+  <text x="35" y="86" font-size="12" font-weight="bold" fill="#1a237e">系统管理表组（8 表）</text>
+
+  <rect x="35"   y="98" width="125" height="42" rx="5" fill="url(#sys)"/>
+  <text x="97"  y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_user</text>
+  <text x="97"  y="131" text-anchor="middle" font-size="9" fill="#c5cae9">用户表</text>
+
+  <rect x="175"  y="98" width="125" height="42" rx="5" fill="url(#sys)"/>
+  <text x="237" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_role</text>
+  <text x="237" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">角色表</text>
+
+  <rect x="315"  y="98" width="135" height="42" rx="5" fill="url(#sys)" stroke="#ffd54f" stroke-width="1.5"/>
+  <text x="382" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_user_role</text>
+  <text x="382" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">用户-角色 桥表</text>
+
+  <rect x="465"  y="98" width="135" height="42" rx="5" fill="url(#sys)"/>
+  <text x="532" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_permission</text>
+  <text x="532" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">权限表</text>
+
+  <rect x="615"  y="98" width="155" height="42" rx="5" fill="url(#sys)" stroke="#ffd54f" stroke-width="1.5"/>
+  <text x="692" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_role_permission</text>
+  <text x="692" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">角色-权限 桥表</text>
+
+  <rect x="785"  y="98" width="115" height="42" rx="5" fill="url(#sys)"/>
+  <text x="842" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_dept</text>
+  <text x="842" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">部门表</text>
+
+  <rect x="915"  y="98" width="115" height="42" rx="5" fill="url(#sys)"/>
+  <text x="972" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_dict</text>
+  <text x="972" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">字典表</text>
+
+  <rect x="1045" y="98" width="130" height="42" rx="5" fill="url(#sys)"/>
+  <text x="1110" y="116" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">sys_operation_log</text>
+  <text x="1110" y="131" text-anchor="middle" font-size="9" fill="#c5cae9">操作日志</text>
+
+  <!-- sys 内部连线：user→user_role→role；permission→role_permission→role -->
+  <line x1="160" y1="119" x2="173" y2="119" stroke="#1a237e" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="119" x2="313" y2="119" stroke="#1a237e" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="450" y1="119" x2="463" y2="119" stroke="#1a237e" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="600" y1="119" x2="613" y2="119" stroke="#1a237e" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="166" y="113" text-anchor="middle" font-size="8" fill="#1a237e">1:N</text>
+  <text x="306" y="113" text-anchor="middle" font-size="8" fill="#1a237e">N:1</text>
+  <text x="456" y="113" text-anchor="middle" font-size="8" fill="#1a237e">1:N</text>
+  <text x="606" y="113" text-anchor="middle" font-size="8" fill="#1a237e">N:1</text>
+
+  <!-- ============================================================ -->
+  <!-- 2. 报警受理 (2 表) y 175~330                                 -->
+  <!-- ============================================================ -->
+  <rect x="20" y="170" width="170" height="160" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="35" y="188" font-size="12" font-weight="bold" fill="#1565c0">报警受理（2 表）</text>
+
+  <rect x="35"  y="200" width="140" height="50" rx="5" fill="url(#biz)"/>
+  <text x="105" y="220" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">alarm_record</text>
+  <text x="105" y="238" text-anchor="middle" font-size="9" fill="#bbdefb">报警记录</text>
+
+  <rect x="35"  y="265" width="140" height="50" rx="5" fill="url(#biz)"/>
+  <text x="105" y="285" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">alarm_dispatch</text>
+  <text x="105" y="303" text-anchor="middle" font-size="9" fill="#bbdefb">警情派发</text>
+
+  <line x1="105" y1="250" x2="105" y2="263" stroke="#1565c0" stroke-width="1.5" marker-end="url(#arrowBiz)"/>
+  <text x="125" y="258" font-size="8" fill="#1565c0">1:N</text>
+
+  <!-- ============================================================ -->
+  <!-- 3. 案件管理 (6 表) y 175~400                                 -->
+  <!-- ============================================================ -->
+  <rect x="205" y="170" width="300" height="230" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="220" y="188" font-size="12" font-weight="bold" fill="#1565c0">案件管理（6 表）</text>
+
+  <!-- 左列：case_info / case_progress / case_evidence -->
+  <rect x="220" y="200" width="130" height="42" rx="5" fill="url(#biz)"/>
+  <text x="285" y="218" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_info</text>
+  <text x="285" y="233" text-anchor="middle" font-size="9" fill="#bbdefb">案件主表</text>
+
+  <rect x="220" y="252" width="130" height="42" rx="5" fill="url(#biz)"/>
+  <text x="285" y="270" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_progress</text>
+  <text x="285" y="285" text-anchor="middle" font-size="9" fill="#bbdefb">侦查进展</text>
+
+  <rect x="220" y="304" width="130" height="42" rx="5" fill="url(#biz)"/>
+  <text x="285" y="322" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_evidence</text>
+  <text x="285" y="337" text-anchor="middle" font-size="9" fill="#bbdefb">证据材料</text>
+
+  <!-- 右列：case_officer(桥) / case_status_log / case_suspect -->
+  <rect x="360" y="200" width="130" height="42" rx="5" fill="url(#biz)" stroke="#ffd54f" stroke-width="1.5"/>
+  <text x="425" y="218" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_officer</text>
+  <text x="425" y="233" text-anchor="middle" font-size="8" fill="#bbdefb">案件-警员 桥表</text>
+
+  <rect x="360" y="252" width="130" height="42" rx="5" fill="url(#biz)"/>
+  <text x="425" y="270" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_status_log</text>
+  <text x="425" y="285" text-anchor="middle" font-size="9" fill="#bbdefb">状态变更日志</text>
+
+  <rect x="360" y="304" width="130" height="42" rx="5" fill="url(#biz)"/>
+  <text x="425" y="322" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">case_suspect</text>
+  <text x="425" y="337" text-anchor="middle" font-size="9" fill="#bbdefb">嫌疑人</text>
+
+  <!-- 案件组内部连线：case_info → 5 张子表 -->
+  <line x1="285" y1="242" x2="285" y2="250" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <line x1="285" y1="294" x2="285" y2="302" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <line x1="360" y1="221" x2="352" y2="221" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <line x1="360" y1="273" x2="352" y2="273" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <line x1="360" y1="325" x2="352" y2="325" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+
+  <!-- 报警 → 案件 升案（虚线双向） -->
+  <line x1="175" y1="218" x2="218" y2="218" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowBiz)"/>
+  <line x1="218" y1="226" x2="175" y2="226" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowBiz)"/>
+  <text x="196" y="212" text-anchor="middle" font-size="8" fill="#1565c0">升案</text>
+
+  <!-- ============================================================ -->
+  <!-- 4. 人员档案 (2 表) y 175~330                                 -->
+  <!-- ============================================================ -->
+  <rect x="520" y="170" width="180" height="120" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="535" y="188" font-size="12" font-weight="bold" fill="#1565c0">人员档案（2 表）</text>
+
+  <rect x="540" y="200" width="140" height="42" rx="5" fill="url(#biz)"/>
+  <text x="610" y="218" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">person_info</text>
+  <text x="610" y="233" text-anchor="middle" font-size="9" fill="#bbdefb">人员主表</text>
+
+  <rect x="540" y="250" width="140" height="38" rx="5" fill="url(#biz)"/>
+  <text x="610" y="267" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">person_violation</text>
+  <text x="610" y="281" text-anchor="middle" font-size="8" fill="#bbdefb">违法记录</text>
+
+  <line x1="610" y1="242" x2="610" y2="248" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+
+  <!-- ============================================================ -->
+  <!-- 5. 车辆管理 (3 表) y 175~330                                 -->
+  <!-- ============================================================ -->
+  <rect x="715" y="170" width="180" height="160" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+  <text x="730" y="188" font-size="12" font-weight="bold" fill="#1565c0">车辆管理（3 表）</text>
+
+  <rect x="735" y="200" width="140" height="42" rx="5" fill="url(#biz)"/>
+  <text x="805" y="218" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">vehicle_info</text>
+  <text x="805" y="233" text-anchor="middle" font-size="9" fill="#bbdefb">车辆主表</text>
+
+  <rect x="735" y="250" width="140" height="38" rx="5" fill="url(#biz)"/>
+  <text x="805" y="267" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">vehicle_violation</text>
+  <text x="805" y="281" text-anchor="middle" font-size="8" fill="#bbdefb">违章记录</text>
+
+  <rect x="735" y="296" width="140" height="38" rx="5" fill="url(#biz)"/>
+  <text x="805" y="313" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">vehicle_control</text>
+  <text x="805" y="327" text-anchor="middle" font-size="8" fill="#bbdefb">布控管理</text>
+
+  <line x1="805" y1="242" x2="805" y2="248" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <line x1="805" y1="288" x2="805" y2="294" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+
+  <!-- ============================================================ -->
+  <!-- 6. 巡逻调度 (3 表) y 175~330                                 -->
+  <!-- ============================================================ -->
+  <rect x="910" y="170" width="180" height="160" rx="6" fill="#e0f2f1" stroke="#00838f" stroke-width="1"/>
+  <text x="925" y="188" font-size="12" font-weight="bold" fill="#00838f">巡逻调度（3 表）</text>
+
+  <rect x="930" y="200" width="140" height="42" rx="5" fill="url(#res)"/>
+  <text x="1000" y="218" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">patrol_schedule</text>
+  <text x="1000" y="233" text-anchor="middle" font-size="9" fill="#b2dfdb">排班表</text>
+
+  <rect x="930" y="250" width="140" height="38" rx="5" fill="url(#res)"/>
+  <text x="1000" y="267" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">patrol_task</text>
+  <text x="1000" y="281" text-anchor="middle" font-size="8" fill="#b2dfdb">巡逻任务</text>
+
+  <rect x="930" y="296" width="140" height="38" rx="5" fill="url(#res)"/>
+  <text x="1000" y="313" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">patrol_checkin</text>
+  <text x="1000" y="327" text-anchor="middle" font-size="8" fill="#b2dfdb">签到打卡</text>
+
+  <line x1="1000" y1="242" x2="1000" y2="248" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+  <line x1="1000" y1="288" x2="1000" y2="294" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+
+  <!-- ============================================================ -->
+  <!-- 7. 警力资源 (2 表) y 420~540                                 -->
+  <!-- ============================================================ -->
+  <rect x="20" y="420" width="180" height="120" rx="6" fill="#e0f2f1" stroke="#00838f" stroke-width="1"/>
+  <text x="35" y="438" font-size="12" font-weight="bold" fill="#00838f">警力资源（2 表）</text>
+
+  <rect x="35" y="450" width="150" height="42" rx="5" fill="url(#res)"/>
+  <text x="110" y="468" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">officer_info</text>
+  <text x="110" y="483" text-anchor="middle" font-size="9" fill="#b2dfdb">警员档案</text>
+
+  <rect x="35" y="500" width="150" height="38" rx="5" fill="url(#res)"/>
+  <text x="110" y="517" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">officer_assessment</text>
+  <text x="110" y="531" text-anchor="middle" font-size="8" fill="#b2dfdb">绩效考核</text>
+
+  <line x1="110" y1="492" x2="110" y2="498" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+
+  <!-- ============================================================ -->
+  <!-- 8. 装备物资 (2 表) y 420~540                                 -->
+  <!-- ============================================================ -->
+  <rect x="220" y="420" width="180" height="120" rx="6" fill="#e0f2f1" stroke="#00838f" stroke-width="1"/>
+  <text x="235" y="438" font-size="12" font-weight="bold" fill="#00838f">装备物资（2 表）</text>
+
+  <rect x="235" y="450" width="150" height="42" rx="5" fill="url(#res)"/>
+  <text x="310" y="468" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">equipment_info</text>
+  <text x="310" y="483" text-anchor="middle" font-size="9" fill="#b2dfdb">装备档案</text>
+
+  <rect x="235" y="500" width="150" height="38" rx="5" fill="url(#res)"/>
+  <text x="310" y="517" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">equipment_borrow</text>
+  <text x="310" y="531" text-anchor="middle" font-size="8" fill="#b2dfdb">领用记录</text>
+
+  <line x1="310" y1="492" x2="310" y2="498" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+
+  <!-- ============================================================ -->
+  <!-- 9. 统计汇总 (2 表) y 420~540                                 -->
+  <!-- ============================================================ -->
+  <rect x="420" y="420" width="270" height="120" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1"/>
+  <text x="435" y="438" font-size="12" font-weight="bold" fill="#6a1b9a">统计汇总（2 表）</text>
+
+  <rect x="435" y="450" width="115" height="42" rx="5" fill="url(#ai)"/>
+  <text x="492" y="468" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">stat_case</text>
+  <text x="492" y="483" text-anchor="middle" font-size="9" fill="#e1bee7">_daily 案件日统计</text>
+
+  <rect x="560" y="450" width="115" height="42" rx="5" fill="url(#ai)"/>
+  <text x="617" y="468" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">stat_alarm</text>
+  <text x="617" y="483" text-anchor="middle" font-size="9" fill="#e1bee7">_daily 警情日统计</text>
+
+  <!-- ============================================================ -->
+  <!-- 10. AI 智能板块 (1 表) y 420~540                             -->
+  <!-- ============================================================ -->
+  <rect x="710" y="420" width="380" height="120" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1"/>
+  <text x="725" y="438" font-size="12" font-weight="bold" fill="#6a1b9a">AI 智能板块（1 表）</text>
+
+  <rect x="725" y="450" width="350" height="42" rx="5" fill="url(#ai)"/>
+  <text x="900" y="468" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">ai_conversation</text>
+  <text x="900" y="483" text-anchor="middle" font-size="9" fill="#e1bee7">AI 对话历史（多场景）  scene: schedule/equipment/analysis/chat/asr/tts/omni</text>
+
+  <!-- ============================================================ -->
+  <!-- ============ 跨组外键关系线 ============ -->
+  <!-- ============================================================ -->
+
+  <!-- (a) sys_user → officer_info ：user_id 1:1  -->
+  <path d="M 110 140 Q 110 320 110 448" fill="none" stroke="#1a237e" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+  <text x="118" y="320" font-size="8" fill="#1a237e">user_id 1:1</text>
+
+  <!-- (b) sys_dept → 多张表（用虚线从 sys_dept 出发到下层多个组）-->
+  <path d="M 842 140 Q 842 240 1090 415" fill="none" stroke="#1a237e" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="1000" y="395" font-size="8" fill="#1a237e">dept_id →</text>
+  <text x="1000" y="406" font-size="8" fill="#1a237e">多张表</text>
+
+  <!-- (c) officer_info ← alarm_dispatch.officer_id -->
+  <path d="M 175 290 Q 165 380 110 448" fill="none" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+  <text x="138" y="380" font-size="8" fill="#00838f">officer_id</text>
+
+  <!-- (d) officer_info → case_info.lead_officer_id -->
+  <path d="M 185 460 Q 200 380 285 244" fill="none" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+  <text x="200" y="350" font-size="8" fill="#00838f">lead_officer_id</text>
+
+  <!-- (e) case_officer.officer_id → officer_info（桥表到警员） -->
+  <path d="M 380 242 Q 320 360 110 448" fill="none" stroke="#00838f" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowRes)"/>
+  <text x="240" y="370" font-size="8" fill="#00838f">officer_id</text>
+
+  <!-- (f) case_suspect → person_info：person_id -->
+  <path d="M 490 325 Q 510 290 540 221" fill="none" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <text x="495" y="280" font-size="8" fill="#1565c0">person_id</text>
+
+  <!-- (g) vehicle_info → person_info：owner_person_id -->
+  <path d="M 735 221 Q 700 220 680 221" fill="none" stroke="#1565c0" stroke-width="1.2" marker-end="url(#arrowBiz)"/>
+  <text x="700" y="214" text-anchor="middle" font-size="8" fill="#1565c0">owner</text>
+
+  <!-- (h) vehicle_violation / vehicle_control → case_info（related_case_id） -->
+  <path d="M 735 269 Q 580 270 490 240" fill="none" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowBiz)"/>
+  <path d="M 735 315 Q 580 305 490 232" fill="none" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowBiz)"/>
+  <text x="595" y="262" font-size="8" fill="#1565c0">rel.case</text>
+
+  <!-- (i) person_violation → case_info：related_case_id -->
+  <path d="M 540 269 Q 510 268 490 234" fill="none" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowBiz)"/>
+
+  <!-- (j) equipment_borrow.borrower_id → officer_info -->
+  <path d="M 235 519 Q 215 500 185 480" fill="none" stroke="#00838f" stroke-width="1.2" marker-end="url(#arrowRes)"/>
+  <text x="190" y="510" font-size="8" fill="#00838f">borrower_id</text>
+
+  <!-- (k) patrol_task.officer_id → officer_info -->
+  <path d="M 930 269 Q 600 380 185 470" fill="none" stroke="#00838f" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrowRes)"/>
+  <text x="600" y="380" font-size="8" fill="#00838f">officer_id</text>
+
+  <!-- (l) ai_conversation.user_id → sys_user -->
+  <path d="M 900 450 Q 900 240 1110 140" fill="none" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arrowAi)"/>
+  <text x="980" y="320" font-size="8" fill="#6a1b9a">user_id</text>
+
+  <!-- ============================================================ -->
+  <!-- ============ 注释：核心数据流 ============ -->
+  <!-- ============================================================ -->
+  <rect x="20" y="565" width="1160" height="100" rx="6" fill="#fff" stroke="#e4e7ed"/>
+  <text x="35" y="588" font-size="12" font-weight="bold" fill="#303133">核心数据流：</text>
+  <text x="35" y="610" font-size="11" fill="#606266">① 报警 → 派发 → 警员处置：<tspan font-weight="bold" fill="#1565c0">alarm_record</tspan> → <tspan font-weight="bold" fill="#1565c0">alarm_dispatch</tspan> → <tspan font-weight="bold" fill="#00838f">officer_info</tspan></text>
+  <text x="35" y="630" font-size="11" fill="#606266">② 报警升案 → 立案侦查：<tspan font-weight="bold" fill="#1565c0">alarm_record.related_case_id</tspan> ↔ <tspan font-weight="bold" fill="#1565c0">case_info</tspan>，主办/协办通过 <tspan font-weight="bold" fill="#1565c0">case_officer</tspan>（桥）关联警员</text>
+  <text x="35" y="650" font-size="11" fill="#606266">③ 警员 ↔ 用户：<tspan font-weight="bold" fill="#00838f">officer_info.user_id</tspan> 1:1 关联 <tspan font-weight="bold" fill="#1a237e">sys_user</tspan>，完成 RBAC 权限 → 业务身份 映射</text>
+
+  <!-- ============================================================ -->
+  <!-- ============ Legend ============ -->
+  <!-- ============================================================ -->
+  <rect x="20" y="685" width="1160" height="90" rx="6" fill="#fff" stroke="#e4e7ed"/>
+  <text x="35" y="708" font-size="12" font-weight="bold" fill="#303133">图例：</text>
+
+  <rect x="80" y="696" width="16" height="16" rx="3" fill="url(#sys)"/>
+  <text x="102" y="709" font-size="11" fill="#606266">系统管理 (8)</text>
+
+  <rect x="200" y="696" width="16" height="16" rx="3" fill="url(#biz)"/>
+  <text x="222" y="709" font-size="11" fill="#606266">业务模块 (13)</text>
+
+  <rect x="320" y="696" width="16" height="16" rx="3" fill="url(#res)"/>
+  <text x="342" y="709" font-size="11" fill="#606266">警力 / 资源 (7)</text>
+
+  <rect x="460" y="696" width="16" height="16" rx="3" fill="url(#ai)"/>
+  <text x="482" y="709" font-size="11" fill="#606266">AI / 统计 (3)</text>
+
+  <line x1="580" y1="704" x2="620" y2="704" stroke="#1a237e" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="628" y="709" font-size="11" fill="#606266">1:N 外键</text>
+
+  <line x1="710" y1="704" x2="750" y2="704" stroke="#1565c0" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="758" y="709" font-size="11" fill="#606266">业务关联外键</text>
+
+  <line x1="880" y1="704" x2="920" y2="704" stroke="#00838f" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="928" y="709" font-size="11" fill="#606266">警员 / 资源外键</text>
+
+  <rect x="80" y="725" width="60" height="20" rx="3" fill="url(#sys)" stroke="#ffd54f" stroke-width="1.5"/>
+  <text x="110" y="739" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">桥表</text>
+  <text x="150" y="739" font-size="10" fill="#606266">▲ 黄色描边 = N:M 桥表（sys_user_role / sys_role_permission / case_officer）</text>
+
+  <text x="35" y="762" font-size="10" fill="#909399">31 张表 · 21 张有演示数据 · 319 条记录</text>
+</svg>
