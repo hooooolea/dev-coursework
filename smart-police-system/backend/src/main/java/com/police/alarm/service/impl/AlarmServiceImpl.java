@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.police.ai.service.AiEquipmentService;
 import com.police.alarm.dto.AlarmCreateDTO;
 import com.police.alarm.dto.AlarmQueryDTO;
 import com.police.alarm.entity.AlarmDispatch;
@@ -13,7 +14,11 @@ import com.police.alarm.mapper.AlarmRecordMapper;
 import com.police.alarm.service.AlarmService;
 import com.police.common.exception.BusinessException;
 import com.police.common.util.SecurityUtil;
+import com.police.officer.entity.OfficerInfo;
+import com.police.officer.mapper.OfficerInfoMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +27,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord> implements AlarmService {
 
     private final AlarmDispatchMapper dispatchMapper;
+    private final OfficerInfoMapper officerMapper;
+    private final AiEquipmentService aiEquipmentService;
     private final AtomicInteger seqCounter = new AtomicInteger(0);
 
     @Override
@@ -84,10 +92,19 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
 
     @Override
     public void dispatch(Long alarmId, Long officerId) {
+        // 1. 校验警情
         AlarmRecord alarm = getById(alarmId);
         if (alarm == null) throw BusinessException.of("警情不存在");
         if (alarm.getStatus() == 4) throw BusinessException.of("警情已关闭，无法派发");
 
+        // 2. 校验警员在岗
+        OfficerInfo officer = officerMapper.selectById(officerId);
+        if (officer == null) throw BusinessException.of("警员不存在");
+        if (!"on_duty".equals(officer.getWorkStatus())) {
+            throw BusinessException.of("警员" + officer.getRealName() + "当前不在岗，状态：" + officer.getWorkStatus());
+        }
+
+        // 3. 写派发记录
         AlarmDispatch dispatch = new AlarmDispatch();
         dispatch.setAlarmId(alarmId);
         dispatch.setOfficerId(officerId);
@@ -95,9 +112,24 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         dispatch.setStatus(1);
         dispatchMapper.insert(dispatch);
 
-        // 更新警情状态为处置中
+        // 4. 更新警情状态
         alarm.setStatus(2);
         updateById(alarm);
+
+        // 5. 异步触发 AI 装备推荐（不阻塞主流程）
+        triggerEquipRecommend(alarm, officer);
+    }
+
+    @Async
+    public void triggerEquipRecommend(AlarmRecord alarm, OfficerInfo officer) {
+        try {
+            String result = aiEquipmentService.recommend(
+                alarm.getAlarmType() != null ? alarm.getAlarmType() : "routine",
+                "", alarm.getLocationDetail() != null ? alarm.getLocationDetail() : "", "");
+            log.info("派发后AI装备推荐完成 alarmId={} officer={}", alarm.getId(), officer.getRealName());
+        } catch (Exception e) {
+            log.warn("派发后AI装备推荐失败 alarmId={}", alarm.getId(), e.getMessage());
+        }
     }
 
     @Override

@@ -7,6 +7,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="query.status" clearable placeholder="全部" style="width:120px">
+            <el-option label="待审批" value="pending" />
             <el-option label="侦查中" value="investigating" />
             <el-option label="已移送" value="transferred" />
             <el-option label="已结案" value="closed" />
@@ -46,10 +47,8 @@
         <el-table-column prop="fileDate" label="立案日期" width="120" />
         <el-table-column label="操作" width="280">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="viewProgress(row)">进展</el-button>
-            <el-button link size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button type="warning" link size="small" @click="viewEvidence(row)">证据</el-button>
-            <el-button type="danger" link size="small" @click="viewSuspect(row)">嫌疑人</el-button>
+            <el-button type="primary" link size="small" @click="openCaseDetail(row)">案件详情</el-button>
+            <el-button v-if="row.status === 'investigating'" type="success" link size="small" @click="advanceStatus(row)">推进</el-button>
             <el-button type="success" link size="small" @click="handleStatusChange(row, 'closed')">结案</el-button>
             <el-button type="danger" link size="small" @click="handleDel(row)">删除</el-button>
           </template>
@@ -114,17 +113,56 @@
       </template>
     </el-dialog>
 
-    <!-- 进展抽屉 -->
-    <el-drawer v-model="progressVisible" :title="`案件进展 - ${currentCase?.caseNo}`" size="500px">
-      <div v-for="p in progressList" :key="p.id" class="progress-item">
-        <div class="prog-time">{{ p.progressTime }}</div>
-        <div class="prog-content">{{ p.content }}</div>
-        <div class="prog-plan" v-if="p.nextPlan">下一步：{{ p.nextPlan }}</div>
-      </div>
-      <el-empty v-if="!progressList.length" description="暂无进展记录" />
-      <template #footer>
-        <el-button type="primary" @click="addProgressVisible = true">新增进展</el-button>
-      </template>
+    <!-- 统一案件详情抽屉 -->
+    <el-drawer v-model="detailVisible" :title="`案件详情 - ${currentCase?.caseNo || ''}`" size="650px">
+      <el-tabs v-model="detailTab" type="card">
+        <el-tab-pane label="侦查进展" name="progress">
+          <div v-for="p in progressList" :key="p.id" class="progress-item">
+            <div class="prog-time">{{ p.progressTime }}</div>
+            <div class="prog-content">{{ p.content }}</div>
+            <div class="prog-plan" v-if="p.nextPlan">下一步：{{ p.nextPlan }}</div>
+          </div>
+          <el-empty v-if="!progressList.length" description="暂无进展" />
+          <el-button type="primary" style="margin-top:12px" @click="addProgressVisible = true">新增进展</el-button>
+        </el-tab-pane>
+        <el-tab-pane label="证据材料" name="evidence">
+          <el-table :data="evidenceList" size="small">
+            <el-table-column prop="evidenceName" label="证据名称" show-overflow-tooltip />
+            <el-table-column prop="evidenceType" label="类型" width="90" />
+            <el-table-column label="文件" width="160" show-overflow-tooltip>
+              <template #default="{ row }">
+                <a v-if="row.fileUrl" :href="row.fileUrl" target="_blank">{{ row.fileName || '查看' }}</a>
+                <span v-else style="color:#c0c4cc">无附件</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="70">
+              <template #default="{ row }">
+                <el-button type="danger" link size="small" @click="handleDelEvidence(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-empty v-if="!evidenceList.length" description="暂无证据" />
+          <el-button type="primary" style="margin-top:12px" @click="addEvidenceVisible = true">新增证据</el-button>
+        </el-tab-pane>
+        <el-tab-pane label="嫌疑人" name="suspect">
+          <el-table :data="suspectList" size="small" v-loading="suspectLoading">
+            <el-table-column prop="name" label="姓名" width="80" />
+            <el-table-column prop="gender" label="性别" width="50"><template #default="{r}">{{ genderLabel(r.gender) }}</template></el-table-column>
+            <el-table-column prop="idCard" label="身份证号" width="160" />
+            <el-table-column prop="suspectRole" label="角色" width="80">
+              <template #default="{r}"><el-tag :type="suspectRoleType(r.suspectRole)" size="small">{{r.suspectRole||'-'}}</el-tag></template>
+            </el-table-column>
+            <el-table-column label="操作" width="100">
+              <template #default="{ row }">
+                <el-button type="primary" link size="small" @click="openEditSuspect(row)">编辑</el-button>
+                <el-button type="danger" link size="small" @click="handleDelSuspect(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-empty v-if="!suspectList.length" description="暂无嫌疑人" />
+          <el-button type="primary" style="margin-top:12px" @click="openAddSuspect">新增嫌疑人</el-button>
+        </el-tab-pane>
+      </el-tabs>
     </el-drawer>
 
     <!-- 新增进展 -->
@@ -143,127 +181,18 @@
       </template>
     </el-dialog>
 
-    <!-- 编辑案件 -->
-    <el-dialog v-model="editVisible" title="编辑案件" width="640px">
-      <el-form ref="editFormRef" :model="editForm" label-width="100px">
-        <el-form-item label="案件名称">
-          <el-input v-model="editForm.caseName" />
-        </el-form-item>
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="案件大类">
-              <el-select v-model="editForm.caseCategory" style="width:100%">
-                <el-option label="刑事案件" value="criminal" />
-                <el-option label="治安案件" value="public" />
-                <el-option label="交通案件" value="traffic" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="案件小类">
-              <el-select v-model="editForm.caseType" style="width:100%">
-                <el-option v-for="d in caseTypes" :key="d.dictValue" :label="d.dictLabel" :value="d.dictValue" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="案件等级">
-          <el-radio-group v-model="editForm.severityLevel">
-            <el-radio :value="1">一般</el-radio>
-            <el-radio :value="2">重要</el-radio>
-            <el-radio :value="3">重大</el-radio>
-            <el-radio :value="4">特重大</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="案情描述">
-          <el-input v-model="editForm.caseDesc" type="textarea" :rows="3" />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="editForm.remark" type="textarea" :rows="2" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editSaving" @click="handleEditSave">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 证据抽屉 -->
-    <el-drawer v-model="evidenceVisible" :title="`证据材料 - ${currentCase?.caseNo}`" size="560px">
-      <div style="margin-bottom:12px">
-        <el-button type="primary" :icon="Plus" size="small" @click="addEvidenceVisible = true">新增证据</el-button>
-      </div>
-      <el-table :data="evidenceList" size="small">
-        <el-table-column prop="evidenceName" label="证据名称" show-overflow-tooltip />
-        <el-table-column prop="evidenceType" label="类型" width="90" />
-        <el-table-column prop="collectTime"  label="收集时间" width="140" />
-        <el-table-column label="文件" width="160" show-overflow-tooltip>
-          <template #default="{ row }">
-            <a v-if="row.fileUrl" :href="row.fileUrl" target="_blank" rel="noopener">
-              {{ row.fileName || '查看文件' }}
-            </a>
-            <span v-else style="color:#c0c4cc">无附件</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="storageLocation" label="存放位置" width="120" />
-        <el-table-column label="操作" width="70">
-          <template #default="{ row }">
-            <el-button type="danger" link size="small" @click="handleDelEvidence(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-empty v-if="!evidenceList.length" description="暂无证据材料" />
-    </el-drawer>
-
     <!-- 新增证据 -->
     <el-dialog v-model="addEvidenceVisible" title="新增证据材料" width="480px">
       <el-form ref="evidFormRef" :model="evidForm" label-width="90px">
-        <el-form-item label="证据名称" prop="evidenceName">
-          <el-input v-model="evidForm.evidenceName" />
-        </el-form-item>
+        <el-form-item label="证据名称" prop="evidenceName"><el-input v-model="evidForm.evidenceName" /></el-form-item>
         <el-form-item label="证据类型">
           <el-select v-model="evidForm.evidenceType" style="width:100%">
-            <el-option label="实物证据" value="physical" />
-            <el-option label="书证" value="document" />
-            <el-option label="视听资料" value="media" />
-            <el-option label="证人证言" value="witness" />
-            <el-option label="鉴定意见" value="appraisal" />
-            <el-option label="其他" value="other" />
+            <el-option label="实物证据" value="physical" /><el-option label="书证" value="document" /><el-option label="视听资料" value="media" /><el-option label="证人证言" value="witness" /><el-option label="鉴定意见" value="appraisal" /><el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="证据文件">
-          <el-upload
-            ref="evidenceUploadRef"
-            :auto-upload="false"
-            :limit="1"
-            :on-change="handleEvidenceFileChange"
-            :on-exceed="handleEvidenceExceed"
-            :on-remove="handleEvidenceRemove"
-            :file-list="evidenceFileList"
-            accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z,.mp4,.mov,.avi,.mp3,.wav"
-          >
-            <el-button type="primary" plain :icon="Upload">选择文件</el-button>
-            <template #tip>
-              <div class="el-upload__tip">支持 jpg/png/pdf/doc/xls/ppt/zip/mp4 等，单文件 ≤ 10MB</div>
-            </template>
-          </el-upload>
-          <div v-if="evidenceUploading" style="margin-top:8px">
-            <el-progress :percentage="evidenceUploadPercent" :show-text="false" />
-            <span style="font-size:12px;color:#909399">上传中...</span>
-          </div>
-        </el-form-item>
-        <el-form-item label="收集时间">
-          <el-date-picker v-model="evidForm.collectTime" type="datetime" style="width:100%" />
-        </el-form-item>
-        <el-form-item label="收集地点">
-          <el-input v-model="evidForm.collectLocation" />
-        </el-form-item>
-        <el-form-item label="存放位置">
-          <el-input v-model="evidForm.storageLocation" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="evidForm.description" type="textarea" :rows="2" />
-        </el-form-item>
+        <el-form-item label="收集地点"><el-input v-model="evidForm.collectLocation" /></el-form-item>
+        <el-form-item label="存放位置"><el-input v-model="evidForm.storageLocation" /></el-form-item>
+        <el-form-item label="描述"><el-input v-model="evidForm.description" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="addEvidenceVisible = false">取消</el-button>
@@ -271,86 +200,17 @@
       </template>
     </el-dialog>
 
-    <!-- 嫌疑人抽屉 -->
-    <el-drawer v-model="suspectVisible" :title="`案件嫌疑人 - ${currentCase?.caseNo}`" size="640px">
-      <div style="margin-bottom:12px">
-        <el-button type="primary" :icon="Plus" size="small" @click="openAddSuspect">新增嫌疑人</el-button>
-      </div>
-      <el-table :data="suspectList" size="small" v-loading="suspectLoading">
-        <el-table-column prop="name" label="姓名" width="100" />
-        <el-table-column prop="gender" label="性别" width="60" align="center">
-          <template #default="{ row }">{{ genderLabel(row.gender) }}</template>
-        </el-table-column>
-        <el-table-column prop="age" label="年龄" width="60" align="center" />
-        <el-table-column prop="idCard" label="身份证号" width="170" />
-        <el-table-column prop="phone" label="电话" width="120" />
-        <el-table-column prop="suspectRole" label="角色" width="90">
-          <template #default="{ row }">
-            <el-tag :type="suspectRoleType(row.suspectRole)" size="small">{{ row.suspectRole || '-' }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="住址" show-overflow-tooltip />
-        <el-table-column label="操作" width="120">
-          <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="openEditSuspect(row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelSuspect(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-empty v-if="!suspectList.length && !suspectLoading" description="暂无嫌疑人记录" />
-    </el-drawer>
-
     <!-- 新增/编辑嫌疑人 -->
-    <el-dialog v-model="suspectFormVisible" :title="suspectForm.id ? '编辑嫌疑人' : '新增嫌疑人'" width="560px">
-      <el-form ref="suspectFormRef" :model="suspectForm" :rules="suspectRules" label-width="90px">
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="姓名" prop="name">
-              <el-input v-model="suspectForm.name" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="角色" prop="suspectRole">
-              <el-select v-model="suspectForm.suspectRole" style="width:100%">
-                <el-option label="主犯" value="主犯" />
-                <el-option label="从犯" value="从犯" />
-                <el-option label="嫌疑人" value="嫌疑人" />
-                <el-option label="在逃" value="在逃" />
-                <el-option label="已抓获" value="已抓获" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="性别">
-              <el-select v-model="suspectForm.gender" style="width:100%">
-                <el-option label="男" value="male" />
-                <el-option label="女" value="female" />
-                <el-option label="未知" value="unknown" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="年龄">
-              <el-input-number v-model="suspectForm.age" :min="0" :max="150" controls-position="right" style="width:100%" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="电话">
-              <el-input v-model="suspectForm.phone" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="身份证号">
-          <el-input v-model="suspectForm.idCard" maxlength="18" />
+    <el-dialog v-model="suspectFormVisible" :title="suspectForm.id ? '编辑嫌疑人' : '新增嫌疑人'" width="500px">
+      <el-form ref="suspectFormRef" :model="suspectForm" :rules="suspectRules" label-width="80px">
+        <el-form-item label="姓名" prop="name"><el-input v-model="suspectForm.name" /></el-form-item>
+        <el-form-item label="角色" prop="suspectRole">
+          <el-select v-model="suspectForm.suspectRole" style="width:100%">
+            <el-option label="主犯" value="主犯" /><el-option label="从犯" value="从犯" /><el-option label="嫌疑人" value="嫌疑人" /><el-option label="在逃" value="在逃" /><el-option label="已抓获" value="已抓获" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="住址">
-          <el-input v-model="suspectForm.address" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="suspectForm.description" type="textarea" :rows="3" />
-        </el-form-item>
+        <el-form-item label="身份证号"><el-input v-model="suspectForm.idCard" /></el-form-item>
+        <el-form-item label="描述"><el-input v-model="suspectForm.description" type="textarea" :rows="2" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="suspectFormVisible = false">取消</el-button>
@@ -391,8 +251,8 @@ const createRules = {
   caseDesc: [{ required: true, message: '请填写案情描述' }]
 }
 
-const progressVisible = ref(false)
-const addProgressVisible = ref(false)
+const detailVisible = ref(false)
+const detailTab = ref('progress')
 const currentCase = ref(null)
 const progressList = ref([])
 const progFormRef = ref()
@@ -439,18 +299,33 @@ async function handleDel(row) {
   loadList()
 }
 
-async function viewProgress(row) {
+async function openCaseDetail(row) {
   currentCase.value = row
-  const res = await caseApi.listProgress(row.id)
-  progressList.value = res.data || []
-  progressVisible.value = true
+  detailTab.value = 'progress'
+  const [pRes, eRes, sRes] = await Promise.all([
+    caseApi.listProgress(row.id),
+    caseApi.listEvidence(row.id),
+    caseApi.listSuspect(row.id)
+  ])
+  progressList.value = pRes.data || []
+  evidenceList.value = eRes.data || []
+  suspectList.value = sRes.data || []
+  detailVisible.value = true
+}
+
+function advanceStatus(row) {
+  ElMessageBox.confirm(`将案件「${row.caseName}」从侦查中推进到已移送？`, '案件推进', { type: 'warning' })
+    .then(() => caseApi.updateStatus(row.id, 'transferred', '审批通过，移送检察院'))
+    .then(() => { ElMessage.success('已推进到移送'); loadList() })
+    .catch(() => {})
 }
 
 async function submitProgress() {
   await caseApi.addProgress(currentCase.value.id, progForm)
   ElMessage.success('进展已记录')
   addProgressVisible.value = false
-  viewProgress(currentCase.value)
+  const res = await caseApi.listProgress(currentCase.value.id)
+  progressList.value = res.data || []
 }
 
 // 编辑案件
@@ -480,7 +355,6 @@ async function handleEditSave() {
 }
 
 // 证据管理
-const evidenceVisible    = ref(false)
 const addEvidenceVisible = ref(false)
 const evidSaving         = ref(false)
 const evidFormRef        = ref()
@@ -514,13 +388,6 @@ function handleEvidenceRemove() {
   evidenceFileList.value = []
 }
 
-async function viewEvidence(row) {
-  currentCase.value = row
-  const res = await caseApi.listEvidence(row.id)
-  evidenceList.value = res.data || []
-  evidenceVisible.value = true
-}
-
 async function handleAddEvidence() {
   await evidFormRef.value.validate()
   evidSaving.value = true
@@ -550,7 +417,8 @@ async function handleAddEvidence() {
     Object.assign(evidForm, { evidenceName: '', evidenceType: 'physical', collectTime: null, collectLocation: '', storageLocation: '', description: '' })
     evidenceFileList.value = []
     pendingEvidenceFile.value = null
-    viewEvidence(currentCase.value)
+    const res = await caseApi.listEvidence(currentCase.value.id)
+    evidenceList.value = res.data || []
   } finally { evidSaving.value = false }
 }
 
@@ -558,7 +426,8 @@ async function handleDelEvidence(row) {
   await ElMessageBox.confirm(`确定删除证据「${row.evidenceName}」？`, '确认删除', { type: 'warning' })
   await caseApi.delEvidence(row.id)
   ElMessage.success('已删除')
-  viewEvidence(currentCase.value)
+  const res = await caseApi.listEvidence(currentCase.value.id)
+  evidenceList.value = res.data || []
 }
 
 // 嫌疑人管理
@@ -579,16 +448,6 @@ const suspectRoleType = (v) => ({ '主犯': 'danger', '从犯': 'warning', '嫌�
 
 function resetSuspectForm() {
   Object.assign(suspectForm, { id: null, name: '', gender: 'unknown', age: null, idCard: '', phone: '', address: '', suspectRole: '嫌疑人', description: '' })
-}
-
-async function viewSuspect(row) {
-  currentCase.value = row
-  suspectVisible.value = true
-  suspectLoading.value = true
-  try {
-    const res = await caseApi.listSuspect(row.id)
-    suspectList.value = res.data || []
-  } finally { suspectLoading.value = false }
 }
 
 function openAddSuspect() {
@@ -614,7 +473,8 @@ async function handleSaveSuspect() {
       ElMessage.success('已添加')
     }
     suspectFormVisible.value = false
-    viewSuspect(currentCase.value)
+    const res = await caseApi.listSuspect(currentCase.value.id)
+    suspectList.value = res.data || []
   } finally { suspectSaving.value = false }
 }
 
@@ -622,7 +482,8 @@ async function handleDelSuspect(row) {
   await ElMessageBox.confirm(`确定删除嫌疑人「${row.name}」？此操作不可恢复`, '确认删除', { type: 'warning' })
   await caseApi.delSuspect(currentCase.value.id, row.id)
   ElMessage.success('已删除')
-  viewSuspect(currentCase.value)
+  const res = await caseApi.listSuspect(currentCase.value.id)
+  suspectList.value = res.data || []
 }
 
 onMounted(async () => {
