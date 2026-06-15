@@ -259,7 +259,7 @@ async function handleAudioFile(file) {
       ElMessage.warning('未识别到有效语音内容，请检查音频文件')
     }
   } catch (e) {
-    ElMessage.warning('语音识别需要按量付费 API Key（Token Plan 不支持 ASR 模型）')
+    ElMessage.error('语音识别失败，请检查音频格式或 API Key')
   }
   finally { mediaLoading.value = false }
 }

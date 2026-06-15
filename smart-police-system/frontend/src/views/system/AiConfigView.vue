@@ -34,9 +34,9 @@
 
       <el-divider />
       <div style="font-size:12px;color:#909399">
-        API Key 获取地址：<a href="https://platform.xiaomimimo.com" target="_blank">小米 MiMo 开放平台</a><br/>
-        模型：mimo-v2.5-pro（文本推理），Token Plan 计费<br/>
-        <span style="color:#e6a23c">⚠️ 语音/视频/ASR/TTS 需按量付费 Key，Token Plan 仅支持文本推理</span>
+        API Key 获取地址：<a href="https://platform.xiaomimimo.com" target="_blank">小米 MiMo 开放平台</a> → Token Plan<br/>
+        已支持模型：Pro（文本推理）· V2.5（全模态）· ASR（语音识别）· TTS（语音合成）<br/>
+        套餐 ¥39/月起，每日 00:00-08:00 八折
       </div>
     </el-card>
   </div>
