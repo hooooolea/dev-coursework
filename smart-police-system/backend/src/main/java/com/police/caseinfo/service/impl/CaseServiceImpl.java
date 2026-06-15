@@ -61,6 +61,12 @@ public class CaseServiceImpl extends ServiceImpl<CaseInfoMapper, CaseInfo> imple
     @Override
     public IPage<CaseInfo> listPage(CaseQueryDTO query) {
         Page<CaseInfo> page = new Page<>(query.getPage(), query.getSize());
+        com.police.system.entity.SysUser user = SecurityUtil.getCurrentUser();
+        if (user != null && user.getRoleCodes() != null
+            && !user.getRoleCodes().contains("ROLE_SUPER_ADMIN")
+            && !user.getRoleCodes().contains("ROLE_DIRECTOR")) {
+            query.setLeadOfficerId(user.getId());
+        }
         return baseMapper.selectCasePage(page, query);
     }
 

@@ -9,6 +9,7 @@ import com.police.alarm.dto.AlarmCreateDTO;
 import com.police.caseinfo.entity.CaseInfo;
 import com.police.caseinfo.mapper.CaseInfoMapper;
 import com.police.system.entity.SysDict;
+import com.police.system.entity.SysUser;
 import com.police.system.mapper.SysDictMapper;
 import com.police.alarm.dto.AlarmQueryDTO;
 import com.police.alarm.entity.AlarmDispatch;
@@ -75,6 +76,20 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
     @Override
     public IPage<AlarmRecord> listPage(AlarmQueryDTO query) {
         Page<AlarmRecord> page = new Page<>(query.getPage(), query.getSize());
+        SysUser currentUser = SecurityUtil.getCurrentUser();
+        if (currentUser != null && currentUser.getRoleCodes() != null
+            && !currentUser.getRoleCodes().contains("ROLE_SUPER_ADMIN")
+            && !currentUser.getRoleCodes().contains("ROLE_DIRECTOR")) {
+            // 非超管/局长：只看派发给自己的警情
+            List<AlarmDispatch> dispatches = dispatchMapper.selectList(
+                new LambdaQueryWrapper<AlarmDispatch>().eq(AlarmDispatch::getOfficerId, currentUser.getId()));
+            if (dispatches.isEmpty()) {
+                page.setTotal(0);
+                return page;
+            }
+            List<Long> ids = dispatches.stream().map(AlarmDispatch::getAlarmId).collect(java.util.stream.Collectors.toList());
+            query.setOfficerAlarmIds(ids);
+        }
         return baseMapper.selectPage(page, query);
     }
 

@@ -21,6 +21,12 @@
         <if test="q.endDate != null">
             AND DATE(alarm_time) &lt;= #{q.endDate}
         </if>
+        <if test="q.officerAlarmIds != null and q.officerAlarmIds.size() > 0">
+            AND id IN
+            <foreach collection="q.officerAlarmIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
         ORDER BY alarm_time DESC
     </select>
 
