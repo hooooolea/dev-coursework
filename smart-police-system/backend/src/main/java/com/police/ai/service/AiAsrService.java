@@ -26,6 +26,9 @@ public class AiAsrService {
      * @return 识别出的文字
      */
     public String transcribe(String base64Audio, String format) throws IOException {
+        String fmt = format != null ? format : "wav";
+        String mime = fmt.equals("mp3") ? "audio/mpeg" : fmt.equals("m4a") ? "audio/mp4" : fmt.equals("webm") ? "audio/webm" : "audio/wav";
+        String dataUrl = "data:" + mime + ";base64," + base64Audio;
         String body = String.format("""
                 {
                     "model": "mimo-v2.5-asr",
@@ -37,7 +40,7 @@ public class AiAsrService {
                     }],
                     "max_tokens": 1024
                 }
-                """, base64Audio, format != null ? format : "wav");
+                """, dataUrl, fmt);
         return miMoClient.chatRaw("mimo-v2.5-asr", body);
     }
 
