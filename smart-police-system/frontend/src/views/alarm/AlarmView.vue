@@ -377,12 +377,10 @@ async function fetchEquipRecommend(alarmId) {
     const res = await alarmApi.equipmentRecommend(alarmId)
     let raw = res.data || res
     if (typeof raw !== 'string') raw = JSON.stringify(raw)
-    // 清理 markdown 代码块包裹（开头和结尾的 ```json / ```）
     raw = raw.replace(/^```(?:json)?\s*\n?/gm, '').replace(/\n?```\s*$/gm, '').trim()
     try {
       equipResult.value = JSON.parse(raw)
     } catch {
-      // 解析失败则展示原文
       equipResult.value = { must: [], suggested: [], summary: raw }
     }
   } catch (e) {
