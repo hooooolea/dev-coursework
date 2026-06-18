@@ -199,6 +199,19 @@ public class AlarmServiceImpl extends ServiceImpl<AlarmRecordMapper, AlarmRecord
         updateById(alarm);
     }
 
+    public void cascadeDelete(Long alarmId) {
+        AlarmRecord alarm = getById(alarmId);
+        if (alarm == null) throw BusinessException.of("警情不存在");
+        // 删除派发记录
+        dispatchMapper.delete(new LambdaQueryWrapper<AlarmDispatch>().eq(AlarmDispatch::getAlarmId, alarmId));
+        // 删除关联案件
+        if (alarm.getRelatedCaseId() != null) {
+            caseMapper.deleteById(alarm.getRelatedCaseId());
+        }
+        // 删除警情
+        baseMapper.deleteById(alarmId);
+    }
+
     @Override
     public void close(Long alarmId, String summary) {
         AlarmRecord alarm = getById(alarmId);

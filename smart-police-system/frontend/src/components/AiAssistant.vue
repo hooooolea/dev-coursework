@@ -76,20 +76,16 @@ const hints = [
 
 function renderMd(text) {
   if (!text) return ''
-  let html = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  let html = text
   html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>')
   html = html.replace(/^## (.+)$/gm, '<h4>$1</h4>')
   html = html.replace(/^# (.+)$/gm, '<h4>$1</h4>')
-  html = html.replace(/^---$/gm, '<hr>')
   html = html.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>')
   html = html.replace(/^\d+[\.\)]\s+(.+)$/gm, '<li>$1</li>')
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
-  html = html.replace(/<br>\s*<li>/g, '<li>')
-  html = html.replace(/<\/li>\s*<br>/g, '</li>')
-  html = html.replace(/\n/g, '<br>')
-  return html
+  return '<pre style="white-space:pre-wrap;font:inherit;margin:0;border:none;background:none;padding:0">' + html + '</pre>'
 }
 
 async function openChat() {

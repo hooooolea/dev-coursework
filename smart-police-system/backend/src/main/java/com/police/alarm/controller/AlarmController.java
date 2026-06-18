@@ -96,8 +96,10 @@ public class AlarmController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('alarm:edit')")
     public Result<?> delete(@PathVariable Long id) {
-        alarmService.removeById(id);
-        return Result.ok();
+        AlarmRecord alarm = alarmService.getById(id);
+        if (alarm == null) return Result.fail(404, "警情不存在");
+        alarmService.cascadeDelete(id);
+        return Result.ok("已级联删除警情及关联数据");
     }
 
     /** AI 装备推荐（接警后自动触发） */
